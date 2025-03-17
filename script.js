@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const GAS_URL = "https://script.google.com/macros/s/你的GAS部署URL/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzXvg-lDd-0WQZN57mko6VjlsM8lu0ZzDAqvbOF9uQYBNviOq6hNafMBF1qqtZmG9yi/exec";
 
 // 🚀 1. 登入功能
 function login() {
@@ -23,22 +23,53 @@ function login() {
     });
 }
 
-// 🚀 2. 讀取歷史資料
+// 🚀 讀取歷史資料
 function loadHistory() {
-    fetch(GAS_URL + "?action=getHistoryData")
+    let type = document.getElementById("historyType").value; // 取得選擇的類型
+
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getHistoryData", type: type }),
+        headers: { "Content-Type": "application/json" }
+    })
     .then(response => response.json())
     .then(data => {
-        let table = document.getElementById("historyTable");
-        table.innerHTML = ""; // 清空現有資料
+        let tableHeader = document.getElementById("tableHeader");
+        let tableBody = document.getElementById("historyTable");
 
-        data.forEach(row => {
+        // 清空現有資料
+        tableHeader.innerHTML = "";
+        tableBody.innerHTML = "";
+
+        // 設定表頭
+        let headers = [];
+        if (type === "盤點") {
+            headers = ["任務名稱", "項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結", "盤點人", "到點感應時間", "上傳時間", "部門"];
+        } else if (type === "巡檢") {
+            headers = ["任務名稱", "點位或項次", "項目", "狀態", "備註", "照片連結", "巡檢人", "到點感應時間", "上傳時間", "部門"];
+        } else if (type === "異常處理") {
+            headers = ["任務名稱", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "負責人", "到點感應時間", "上傳時間", "處理狀態", "複查情形", "複查照片連結", "複查時間", "主管", "批准或退回", "主管意見", "確認時間", "處理紀錄", "部門"];
+        }
+
+        // 生成表頭
+        let headerRow = document.createElement("tr");
+        headers.forEach(header => {
+            let th = document.createElement("th");
+            th.innerText = header;
+            headerRow.appendChild(th);
+        });
+        tableHeader.appendChild(headerRow);
+
+        // 填充表格數據
+        data.forEach((row, index) => {
+            if (index === 0) return; // 跳過標題列
             let tr = document.createElement("tr");
             row.forEach(cell => {
                 let td = document.createElement("td");
                 td.innerText = cell;
                 tr.appendChild(td);
             });
-            table.appendChild(tr);
+            tableBody.appendChild(tr);
         });
     });
 }
