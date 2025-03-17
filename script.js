@@ -1,73 +1,87 @@
-const GAS_API_URL = "https://https://script.google.com/macros/s/AKfycbw004TPBGbRO2W5qh_jEH1KJqsYDVvK_NXDHrds6AXoxr116PpB1hEG3j-Hscz5cnPK7Q/exec.google.com/macros/s/YOUR_GAS_DEPLOY_ID/exec";
+// 取得 API 基本 URL
+const GAS_URL = "https://script.google.com/macros/s/你的GAS部署URL/exec";
 
-document.addEventListener("DOMContentLoaded", function () {
-    fetchLinks();
-});
+// 🚀 1. 登入功能
+function login() {
+    let account = document.getElementById("account").value;
+    let password = document.getElementById("password").value;
 
-function fetchLinks() {
-    fetch(GAS_API_URL)
-        .then(response => response.json())
-        .then(data => {
-            renderLinks(data);
-            renderCategories(data);
-        })
-        .catch(error => console.error("Error fetching data:", error));
-}
-
-function renderLinks(links) {
-    const container = document.getElementById("link-container");
-    container.innerHTML = "";
-
-    links.forEach(link => {
-        let a = document.createElement("a");
-        a.href = link.url;
-        a.dataset.category = link.category;
-        a.innerHTML = `
-            ${link.icon ? `<img src="${link.icon}" alt="${link.text}">` : ""}
-            ${link.text}
-        `;
-        container.appendChild(a);
-    });
-}
-
-function renderCategories(links) {
-    const categories = ["全部", ...new Set(links.map(link => link.category))];
-    const filterContainer = document.getElementById("category-filter");
-    filterContainer.innerHTML = "";
-
-    categories.forEach(category => {
-        let button = document.createElement("button");
-        button.innerText = category;
-        button.onclick = () => filterByCategory(category);
-        if (category === "全部") button.classList.add("active");
-        filterContainer.appendChild(button);
-    });
-}
-
-function filterByCategory(category) {
-    const links = document.querySelectorAll("#link-container a");
-    links.forEach(link => {
-        if (category === "全部" || link.dataset.category === category) {
-            link.style.display = "flex";
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "loginUser", account: account, password: password }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            localStorage.setItem("department", data.department);
+            localStorage.setItem("role", data.role);
+            window.location.href = "dashboard.html";
         } else {
-            link.style.display = "none";
+            document.getElementById("message").innerText = "登入失敗";
         }
     });
+}
 
-    document.querySelectorAll(".category-filter button").forEach(btn => {
-        btn.classList.toggle("active", btn.innerText === category);
+// 🚀 2. 讀取歷史資料
+function loadHistory() {
+    fetch(GAS_URL + "?action=getHistoryData")
+    .then(response => response.json())
+    .then(data => {
+        let table = document.getElementById("historyTable");
+        table.innerHTML = ""; // 清空現有資料
+
+        data.forEach(row => {
+            let tr = document.createElement("tr");
+            row.forEach(cell => {
+                let td = document.createElement("td");
+                td.innerText = cell;
+                tr.appendChild(td);
+            });
+            table.appendChild(tr);
+        });
     });
 }
 
-function filterLinks() {
-    const searchInput = document.getElementById("search-input").value.toLowerCase();
-    const links = document.querySelectorAll("#link-container a");
+// 🚀 3. 主管審核 - 取得資料
+function loadReviewData() {
+    let department = localStorage.getItem("department");
 
-    links.forEach(link => {
-        if (link.textContent.toLowerCase().includes(searchInput)) {
-            link.style.display = "flex";
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getReviewData", department: department }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        let select = document.getElementById("reviewList");
+        select.innerHTML = ""; // 清空選單
+        data.forEach(row => {
+            let option = document.createElement("option");
+            option.value = row[0];
+            option.innerText = row[0];
+            select.appendChild(option);
+        });
+    });
+}
+
+// 🚀 4. 主管審核 - 提交
+function submitReview() {
+    let item = document.getElementById("reviewList").value;
+    let comment = document.getElementById("comment").value;
+
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "updateReview", itemName: item, comment: comment }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("審核成功");
+            location.reload();
         } else {
-            link.style.display = "none";
+            alert("審核失敗");
         }
     });
 }
