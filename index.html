@@ -2,36 +2,18 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>登入系統</title>
+    <title>登入</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>會員登入</h2>
-    <input type="text" id="account" placeholder="輸入帳號">
-    <input type="password" id="password" placeholder="輸入密碼">
-    <button onclick="login()">登入</button>
-    <p id="message"></p>
+    <div class="container">
+        <h2>會員登入</h2>
+        <input type="text" id="account" placeholder="輸入帳號">
+        <input type="password" id="password" placeholder="輸入密碼">
+        <button onclick="login()">登入</button>
+        <p id="message"></p>
+    </div>
 
-    <script>
-        function login() {
-            var account = document.getElementById("account").value;
-            var password = document.getElementById("password").value;
-
-            fetch("https://script.google.com/macros/s/你的GAS部署URL/exec", {
-                method: "POST",
-                body: JSON.stringify({ action: "loginUser", account: account, password: password }),
-                headers: { "Content-Type": "application/json" }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    localStorage.setItem("department", data.department);
-                    localStorage.setItem("role", data.role);
-                    window.location.href = "dashboard.html";
-                } else {
-                    document.getElementById("message").innerText = "登入失敗";
-                }
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
