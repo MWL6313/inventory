@@ -10,11 +10,11 @@
         <h2>主管審核</h2>
         <select id="reviewList"></select>
         <input type="text" id="comment" placeholder="輸入主管意見">
-        <button onclick="submitReview()">提交</button>
+        <button onclick="submitReview('approve')">批准</button>
+        <button onclick="submitReview('reject')">退回</button>
     </div>
 
     <script src="script.js"></script>
     <script>loadReviewData();</script>
 </body>
 </html>
-
