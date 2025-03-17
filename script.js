@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzXvg-lDd-0WQZN57mko6VjlsM8lu0ZzDAqvbOF9uQYBNviOq6hNafMBF1qqtZmG9yi/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzyUpVvD4n7fIHXlHf8erpfvjd9c_OtV12qz0I-TiRdymfiL5S4cXkPszOXlz3spRL5/exec";
 
 // 🚀 1. 登入功能
 function login() {
@@ -76,43 +76,55 @@ function loadHistory() {
 
 // 🚀 3. 主管審核 - 取得資料
 function loadReviewData() {
+    let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
 
     fetch(GAS_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "getReviewData", department: department }),
+        body: JSON.stringify({ action: "getPendingReviews", role: role, department: department }),
         headers: { "Content-Type": "application/json" }
     })
     .then(response => response.json())
     .then(data => {
         let select = document.getElementById("reviewList");
-        select.innerHTML = ""; // 清空選單
+        select.innerHTML = "";
         data.forEach(row => {
             let option = document.createElement("option");
-            option.value = row[0];
+            option.value = row[0]; // 任務名稱
             option.innerText = row[0];
             select.appendChild(option);
         });
     });
 }
 
+
 // 🚀 4. 主管審核 - 提交
-function submitReview() {
-    let item = document.getElementById("reviewList").value;
+function submitReview(decision) {
+    let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value;
+    let role = localStorage.getItem("role");
+    let department = localStorage.getItem("department");
 
     fetch(GAS_URL, {
         method: "POST",
-        body: JSON.stringify({ action: "updateReview", itemName: item, comment: comment }),
+        body: JSON.stringify({
+            action: "approveReview",
+            taskName: taskName,
+            decision: decision,
+            comment: comment,
+            role: role,
+            department: department
+        }),
         headers: { "Content-Type": "application/json" }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("審核成功");
+            alert("審核成功，新的狀態：" + data.newStatus);
             location.reload();
         } else {
-            alert("審核失敗");
+            alert("審核失敗：" + data.message);
         }
     });
 }
+
