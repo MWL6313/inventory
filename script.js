@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw5ffIPiMlb_bzw95k3omk2OPPlDdgUfiZEvUOBXQmhbfVBQBc44msntOsOXPwni1_p/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz01QdTbTDvtnBM3et6f6GZMDXjhAf2OULWOesHEr1T48x2zZgMzdvHsvLvVUYP5gR6/exec";
 
 // 🚀 1. 登入功能
 function login() {
