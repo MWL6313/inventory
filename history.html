@@ -8,10 +8,18 @@
 <body>
     <div class="container">
         <h2>歷史資料</h2>
+        
+        <!-- 下拉選單選擇 盤點、巡檢 或 異常處理 -->
+        <label for="historyType">選擇類別：</label>
+        <select id="historyType" onchange="loadHistory()">
+            <option value="盤點">盤點</option>
+            <option value="巡檢">巡檢</option>
+            <option value="異常處理">異常處理</option>
+        </select>
+        
+        <!-- 動態表格 -->
         <table>
-            <thead>
-                <tr><th>任務名稱</th><th>負責人</th><th>盤點時間</th><th>狀態</th></tr>
-            </thead>
+            <thead id="tableHeader"></thead>
             <tbody id="historyTable"></tbody>
         </table>
     </div>
