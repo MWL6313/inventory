@@ -3,31 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>歷史資料</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>歷史資料</h2>
-    <table border="1">
-        <thead>
-            <tr><th>任務名稱</th><th>負責人</th><th>盤點時間</th><th>狀態</th></tr>
-        </thead>
-        <tbody id="historyTable"></tbody>
-    </table>
+    <div class="container">
+        <h2>歷史資料</h2>
+        <table>
+            <thead>
+                <tr><th>任務名稱</th><th>負責人</th><th>盤點時間</th><th>狀態</th></tr>
+            </thead>
+            <tbody id="historyTable"></tbody>
+        </table>
+    </div>
 
-    <script>
-        fetch("https://script.google.com/macros/s/你的GAS部署URL/exec?action=getHistoryData")
-        .then(response => response.json())
-        .then(data => {
-            let table = document.getElementById("historyTable");
-            data.forEach(row => {
-                let tr = document.createElement("tr");
-                row.forEach(cell => {
-                    let td = document.createElement("td");
-                    td.innerText = cell;
-                    tr.appendChild(td);
-                });
-                table.appendChild(tr);
-            });
-        });
-    </script>
+    <script src="script.js"></script>
+    <script>loadHistory();</script>
 </body>
 </html>
