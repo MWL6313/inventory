@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>主管審核</title>
+</head>
+<body>
+    <h2>主管審核</h2>
+    <select id="reviewList"></select>
+    <input type="text" id="comment" placeholder="輸入主管意見">
+    <button onclick="submitReview()">提交</button>
+
+    <script>
+        let department = localStorage.getItem("department");
+
+        // 獲取主管審核資料（僅該部門）
+        fetch("https://script.google.com/macros/s/你的GAS部署URL/exec", {
+            method: "POST",
+            body: JSON.stringify({ action: "getReviewData", department: department }),
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let select = document.getElementById("reviewList");
+            data.forEach(row => {
+                let option = document.createElement("option");
+                option.value = row[0];
+                option.innerText = row[0];
+                select.appendChild(option);
+            });
+        });
+
+        function submitReview() {
+            let item = document.getElementById("reviewList").value;
+            let comment = document.getElementById("comment").value;
+
+            fetch("https://script.google.com/macros/s/你的GAS部署URL/exec", {
+                method: "POST",
+                body: JSON.stringify({ action: "updateReview", itemName: item, comment: comment }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("審核成功");
+                    location.reload();
+                } else {
+                    alert("審核失敗");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
