@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzZKlmOJ01b1RvPyH4DGPmcAwf9wt0GUlNFzr5gKKZgT6Zm0SmmdRBn92CBV9M2zEw/exec";
+const API_BASE_URL = "https://cloud-run-api-oddqskcraa-de.a.run.app";  // 你的 Cloud Run API URL;
 
 // 🚀 1. 登入功能
 function login() {
