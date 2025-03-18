@@ -1,8 +1,8 @@
 // 取得 API 基本 URL
-const API_BASE_URL = "https://cloud-run-api-oddqskcraa-de.a.run.app";  // 你的 Cloud Run API URL;
+const API_BASE_URL = "https://cloud-run-api-oddqskcraa-de.a.run.app";  // 替換為你的 Cloud Run API URL
 
 // 🚀 1. 登入功能
-function login() {
+async function login() {
     let account = document.getElementById("account").value.trim();
     let password = document.getElementById("password").value.trim();
 
@@ -11,18 +11,14 @@ function login() {
         return;
     }
 
-    let formData = new URLSearchParams();
-    formData.append("action", "loginUser");
-    formData.append("account", account);
-    formData.append("password", password);
+    try {
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ account, password }),
+        });
 
-    fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
+        const data = await response.json();
         if (data.success) {
             localStorage.setItem("department", data.department);
             localStorage.setItem("role", data.role);
@@ -30,31 +26,27 @@ function login() {
         } else {
             document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error("登入請求錯誤：", error);
         document.getElementById("message").innerText = "系統錯誤，請稍後再試";
-    });
+    }
 }
 
 // 🚀 2. 讀取歷史資料
-function loadHistory() {
+async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
     if (!typeSelect) return;
-    
+
     let type = typeSelect.value;
 
-    let formData = new URLSearchParams();
-    formData.append("action", "getHistoryData");
-    formData.append("type", type);
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type }),
+        });
 
-    fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
+        const data = await response.json();
         let tableHeader = document.getElementById("tableHeader");
         let tableBody = document.getElementById("historyTable");
 
@@ -88,12 +80,13 @@ function loadHistory() {
             });
             tableBody.appendChild(tr);
         });
-    })
-    .catch(error => console.error("歷史資料載入錯誤：", error));
+    } catch (error) {
+        console.error("歷史資料載入錯誤：", error);
+    }
 }
 
 // 🚀 3. 主管審核 - 取得資料
-function loadReviewData() {
+async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
 
@@ -102,18 +95,14 @@ function loadReviewData() {
         return;
     }
 
-    let formData = new URLSearchParams();
-    formData.append("action", "getPendingReviews");
-    formData.append("role", role);
-    formData.append("department", department);
+    try {
+        const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role, department }),
+        });
 
-    fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
+        const data = await response.json();
         let select = document.getElementById("reviewList");
         if (!select) return;
 
@@ -124,12 +113,13 @@ function loadReviewData() {
             option.innerText = row[0];
             select.appendChild(option);
         });
-    })
-    .catch(error => console.error("主管審核資料載入錯誤：", error));
+    } catch (error) {
+        console.error("主管審核資料載入錯誤：", error);
+    }
 }
 
 // 🚀 4. 主管審核 - 提交
-function submitReview(decision) {
+async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
     let role = localStorage.getItem("role");
@@ -140,32 +130,22 @@ function submitReview(decision) {
         return;
     }
 
-    let formData = new URLSearchParams();
-    formData.append("action", "approveReview");
-    formData.append("taskName", taskName);
-    formData.append("decision", decision);
-    formData.append("comment", comment);
-    formData.append("role", role);
-    formData.append("department", department);
+    try {
+        const response = await fetch(`${API_BASE_URL}/approve`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ taskName, decision, comment, role, department }),
+        });
 
-    fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
+        const data = await response.json();
         if (data.success) {
             alert("審核成功，新的狀態：" + data.newStatus);
             location.reload();
         } else {
             alert("審核失敗：" + data.message);
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error("審核提交錯誤：", error);
         alert("系統錯誤，請稍後再試");
-    });
+    }
 }
-
-
