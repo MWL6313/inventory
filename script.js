@@ -118,6 +118,7 @@ async function loadHistory() {
                 detailRow.style.display = isHidden ? "table-row" : "none";
                 expandButton.innerText = isHidden ? "－" : "＋";
             };
+
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
@@ -216,7 +217,7 @@ async function loadHistory() {
 function convertGoogleDriveLink(link) {
     if (!link) return "";
     let match = link.match(/[-\w]{25,}/);
-    return match ? https://drive.google.com/uc?export=view&id=${match[0]} : "";
+    return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
 
 
