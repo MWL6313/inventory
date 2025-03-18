@@ -46,7 +46,7 @@ async function loadHistory() {
     console.log("🔹[DEBUG] 讀取歷史資料 - 類型:", type);
 
     try {
-        const response = await fetch(${API_BASE_URL}/history, {
+        const response = await fetch(`${API_BASE_URL}/history`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ type }),
@@ -113,7 +113,7 @@ async function loadHistory() {
             expandButton.innerText = "＋";
             expandButton.classList.add("expand-btn");
             expandButton.onclick = function () {
-                let detailRow = document.getElementById(group-${groupIndex});
+                let detailRow = document.getElementById(`group-${groupIndex}`);
                 let isHidden = detailRow.style.display === "none";
                 detailRow.style.display = isHidden ? "table-row" : "none";
                 expandButton.innerText = isHidden ? "－" : "＋";
@@ -133,7 +133,7 @@ async function loadHistory() {
 
             // 📌 **建立詳細表格**
             let detailRow = document.createElement("tr");
-            detailRow.id = group-${groupIndex};
+            detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
 
             let detailTd = document.createElement("td");
@@ -154,6 +154,7 @@ async function loadHistory() {
             // 🔹 **填充數據**
             groupedData[groupKey].forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
+                subTr.id = `sub-detail-${groupIndex}-${rowIndex}`; // 確保唯一 ID
 
                 // 🔸 **展開按鈕**
                 let subExpandTd = document.createElement("td");
@@ -161,7 +162,7 @@ async function loadHistory() {
                 subExpandButton.innerText = "＋";
                 subExpandButton.classList.add("expand-btn");
                 subExpandButton.onclick = function () {
-                    let subDetailRow = document.getElementById(sub-${groupIndex}-${rowIndex});
+                    let subDetailRow = document.getElementById(`sub-detail-${groupIndex}-${rowIndex}`);
                     let isHidden = subDetailRow.style.display === "none";
                     subDetailRow.style.display = isHidden ? "table-row" : "none";
                     subExpandButton.innerText = isHidden ? "－" : "＋";
@@ -170,9 +171,9 @@ async function loadHistory() {
                 subTr.appendChild(subExpandTd);
 
                 // 🔸 **填充主要數據**
-                headers.forEach((header, colIndex) => {
+                headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    if (photoIndexes.includes(colIndex)) { 
+                    if (photoIndexes.includes(colIndex)) {
                         let imgContainer = document.createElement("div");
                         let imgLinks = row[colIndex] ? row[colIndex].split(",") : [];
 
@@ -189,7 +190,6 @@ async function loadHistory() {
                                 imgContainer.appendChild(img);
                             });
                         } else {
-                            // 照片欄位留白
                             td.innerText = "";
                         }
 
@@ -210,6 +210,7 @@ async function loadHistory() {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
     }
 }
+
 
 // 🚀 **將 Google Drive 連結轉為可預覽**
 function convertGoogleDriveLink(link) {
