@@ -71,17 +71,17 @@ async function loadHistory() {
         if (type === "盤點") {
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11]; // 任務名稱 + 上傳時間
-            photoIndexes = [8]; // 照片連結
+            photoIndexes = [7]; // 照片連結
             personIndex = 9;
         } else if (type === "巡檢") {
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
-            groupingKey = [0, 8];
-            photoIndexes = [5];
+            groupingKey = [0, 8]; // 任務名稱 + 上傳時間
+            photoIndexes = [4];
             personIndex = 6;
         } else if (type === "異常處理") {
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
-            groupingKey = [0, 11];
-            photoIndexes = [8, 14]; // 照片連結 & 複查照片連結
+            groupingKey = [0, 11]; // 任務名稱 + 上傳時間
+            photoIndexes = [7, 8]; // 照片連結 & 複查照片連結
             personIndex = 9;
         }
 
@@ -145,7 +145,7 @@ async function loadHistory() {
 
             // 🔹 **建立標題列**
             let detailHeaderRow = document.createElement("tr");
-            ["", ...headers].forEach(header => {
+            headers.forEach(header => {
                 let th = document.createElement("th");
                 th.innerText = header;
                 detailHeaderRow.appendChild(th);
@@ -155,21 +155,6 @@ async function loadHistory() {
             // 🔹 **填充數據**
             groupedData[groupKey].forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
-                subTr.id = `sub-detail-${groupIndex}-${rowIndex}`; // 確保唯一 ID
-
-                // 🔸 **展開按鈕**
-                let subExpandTd = document.createElement("td");
-                let subExpandButton = document.createElement("button");
-                subExpandButton.innerText = "＋";
-                subExpandButton.classList.add("expand-btn");
-                subExpandButton.onclick = function () {
-                    let subDetailRow = document.getElementById(`sub-detail-${groupIndex}-${rowIndex}`);
-                    let isHidden = subDetailRow.style.display === "none";
-                    subDetailRow.style.display = isHidden ? "table-row" : "none";
-                    subExpandButton.innerText = isHidden ? "－" : "＋";
-                };
-                subExpandTd.appendChild(subExpandButton);
-                subTr.appendChild(subExpandTd);
 
                 // 🔸 **填充主要數據**
                 headers.forEach((_, colIndex) => {
@@ -211,7 +196,6 @@ async function loadHistory() {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
     }
 }
-
 
 // 🚀 **將 Google Drive 連結轉為可預覽**
 function convertGoogleDriveLink(link) {
