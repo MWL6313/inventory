@@ -173,11 +173,11 @@ async function loadHistory() {
                 subTr.appendChild(subExpandTd);
 
                 // 🔸 **填充主要數據**
-                headers.forEach((_, colIndex) => {
+                headers.forEach((header, colIndex) => {
                     let td = document.createElement("td");
-                    if (photoIndexes.includes(colIndex)) {
+                    if (photoIndexes.includes(colIndex + 1)) { // 確保索引正確
                         let imgContainer = document.createElement("div");
-                        let imgLinks = row[colIndex] ? row[colIndex].split(",") : [];
+                        let imgLinks = row[colIndex + 1] ? row[colIndex + 1].split(",") : [];
 
                         imgLinks.forEach(link => {
                             let img = document.createElement("img");
@@ -193,7 +193,7 @@ async function loadHistory() {
 
                         td.appendChild(imgContainer);
                     } else {
-                        td.innerText = row[colIndex] || "";
+                        td.innerText = row[colIndex + 1] || "";
                     }
                     subTr.appendChild(td);
                 });
@@ -208,6 +208,7 @@ async function loadHistory() {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
     }
 }
+
 
 // 🚀 **將 Google Drive 連結轉為可預覽**
 function convertGoogleDriveLink(link) {
