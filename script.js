@@ -37,7 +37,7 @@ async function login() {
 }
 
 // 🚀 2. 讀取歷史資料
-// 🚀 2. 讀取歷史資料
+// 🚀 2. 讀取歷史資料（分群組顯示）
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
     if (!typeSelect) return;
@@ -67,12 +67,18 @@ async function loadHistory() {
         tableBody.innerHTML = "";
 
         let headers, detailHeaders;
+        let groupKeyIndex, groupTimeIndex;
+
         if (type === "盤點") {
             headers = ["", "任務名稱", "項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註"];
             detailHeaders = ["照片連結", "盤點人", "到點感應時間", "上傳時間", "部門"];
+            groupKeyIndex = 1; // 任務名稱
+            groupTimeIndex = 11; // 上傳時間
         } else if (type === "巡檢") {
             headers = ["", "任務名稱", "點位或項次", "項目", "狀態", "備註"];
             detailHeaders = ["照片連結", "巡檢人", "到點感應時間", "上傳時間", "部門"];
+            groupKeyIndex = 1;
+            groupTimeIndex = 9;
         } else if (type === "異常處理") {
             headers = ["", "任務名稱", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
             detailHeaders = [
@@ -80,6 +86,8 @@ async function loadHistory() {
                 ["複查情形", "複查照片連結", "複查時間", "主管"],
                 ["批准或退回", "主管意見", "確認時間", "處理紀錄", "部門"]
             ];
+            groupKeyIndex = 1;
+            groupTimeIndex = 11;
         }
 
         // 建立表頭
@@ -91,55 +99,91 @@ async function loadHistory() {
         });
         tableHeader.appendChild(headerRow);
 
-        // 建立資料行
-        data.slice(1).forEach((row, index) => { // 跳過表頭
-            let mainRow = document.createElement("tr");
-            mainRow.classList.add("parent-row");
+        // 📌 **分組資料**
+        let groups = {};
+        data.slice(1).forEach(row => {
+            let groupKey = `${row[groupKeyIndex]}_${row[groupTimeIndex]}`;
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push(row);
+        });
 
-            // 展開按鈕
+        // 📌 **建立分組 UI**
+        Object.keys(groups).forEach((groupKey, groupIndex) => {
+            let groupRows = groups[groupKey];
+
+            let firstRow = groupRows[0];
+            let groupRow = document.createElement("tr");
+            groupRow.classList.add("group-row");
+
             let expandTd = document.createElement("td");
             let expandButton = document.createElement("button");
             expandButton.innerText = "＋";
             expandButton.classList.add("expand-btn");
             expandButton.onclick = function () {
-                let childRow = document.getElementById(`child-${index}`);
-                if (childRow.style.display === "none") {
-                    childRow.style.display = "table-row";
-                    expandButton.innerText = "－";
-                } else {
-                    childRow.style.display = "none";
-                    expandButton.innerText = "＋";
-                }
+                let childRows = document.querySelectorAll(`.child-${groupIndex}`);
+                let isHidden = childRows[0].style.display === "none";
+
+                childRows.forEach(row => {
+                    row.style.display = isHidden ? "table-row" : "none";
+                });
+                expandButton.innerText = isHidden ? "－" : "＋";
             };
             expandTd.appendChild(expandButton);
-            mainRow.appendChild(expandTd);
+            groupRow.appendChild(expandTd);
 
-            // 主行內容
+            // 📌 **顯示群組資訊**
             headers.slice(1).forEach((_, colIndex) => {
                 let td = document.createElement("td");
-                td.innerText = row[colIndex] || "";
-                mainRow.appendChild(td);
+                td.innerText = firstRow[colIndex] || "";
+                groupRow.appendChild(td);
             });
+            tableBody.appendChild(groupRow);
 
-            tableBody.appendChild(mainRow);
+            // 📌 **子資料行**
+            groupRows.forEach((row, rowIndex) => {
+                let childRow = document.createElement("tr");
+                childRow.classList.add(`child-${groupIndex}`);
+                childRow.style.display = "none";
 
-            // 子行（詳細資料）
-            let childRow = document.createElement("tr");
-            childRow.id = `child-${index}`;
-            childRow.classList.add("child-row");
-            childRow.style.display = "none";
+                let childTd = document.createElement("td");
+                childTd.colSpan = headers.length;
 
-            let childTd = document.createElement("td");
-            childTd.colSpan = headers.length; // 跨所有欄位
+                let detailTable = document.createElement("table");
+                detailTable.classList.add("detail-table");
 
-            let detailTable = document.createElement("table");
-            detailTable.classList.add("detail-table");
+                if (type === "異常處理") {
+                    detailHeaders.forEach(rowGroup => {
+                        let detailHeaderRow = document.createElement("tr");
+                        rowGroup.forEach(header => {
+                            let th = document.createElement("th");
+                            th.innerText = header;
+                            detailHeaderRow.appendChild(th);
+                        });
+                        detailTable.appendChild(detailHeaderRow);
 
-            if (type === "異常處理") {
-                // 異常處理分成三行
-                detailHeaders.forEach(rowGroup => {
+                        let detailDataRow = document.createElement("tr");
+                        rowGroup.forEach((_, colIndex) => {
+                            let td = document.createElement("td");
+                            if (rowGroup[colIndex].includes("照片")) {
+                                let img = document.createElement("img");
+                                img.src = row[headers.length + colIndex] || "https://via.placeholder.com/50";
+                                img.alt = "照片";
+                                img.style.width = "50px";
+                                img.style.cursor = "pointer";
+                                img.onclick = () => window.open(row[headers.length + colIndex], "_blank");
+                                td.appendChild(img);
+                            } else {
+                                td.innerText = row[headers.length + colIndex] || "";
+                            }
+                            detailDataRow.appendChild(td);
+                        });
+                        detailTable.appendChild(detailDataRow);
+                    });
+                } else {
                     let detailHeaderRow = document.createElement("tr");
-                    rowGroup.forEach(header => {
+                    detailHeaders.forEach(header => {
                         let th = document.createElement("th");
                         th.innerText = header;
                         detailHeaderRow.appendChild(th);
@@ -147,16 +191,15 @@ async function loadHistory() {
                     detailTable.appendChild(detailHeaderRow);
 
                     let detailDataRow = document.createElement("tr");
-                    rowGroup.forEach((_, colIndex) => {
+                    detailHeaders.forEach((_, colIndex) => {
                         let td = document.createElement("td");
-
-                        if (rowGroup[colIndex].includes("照片")) {
+                        if (colIndex === 0) {
                             let img = document.createElement("img");
-                            img.src = row[headers.length + colIndex] || "https://via.placeholder.com/50";
+                            img.src = row[headers.length] || "https://via.placeholder.com/50";
                             img.alt = "照片";
                             img.style.width = "50px";
                             img.style.cursor = "pointer";
-                            img.onclick = () => window.open(row[headers.length + colIndex], "_blank");
+                            img.onclick = () => window.open(row[headers.length], "_blank");
                             td.appendChild(img);
                         } else {
                             td.innerText = row[headers.length + colIndex] || "";
@@ -164,40 +207,12 @@ async function loadHistory() {
                         detailDataRow.appendChild(td);
                     });
                     detailTable.appendChild(detailDataRow);
-                });
-            } else {
-                // 盤點 & 巡檢（單行）
-                let detailHeaderRow = document.createElement("tr");
-                detailHeaders.forEach(header => {
-                    let th = document.createElement("th");
-                    th.innerText = header;
-                    detailHeaderRow.appendChild(th);
-                });
-                detailTable.appendChild(detailHeaderRow);
+                }
 
-                let detailDataRow = document.createElement("tr");
-                detailHeaders.forEach((_, colIndex) => {
-                    let td = document.createElement("td");
-
-                    if (colIndex === 0) { // 照片連結
-                        let img = document.createElement("img");
-                        img.src = row[headers.length] || "https://via.placeholder.com/50";
-                        img.alt = "照片";
-                        img.style.width = "50px";
-                        img.style.cursor = "pointer";
-                        img.onclick = () => window.open(row[headers.length], "_blank");
-                        td.appendChild(img);
-                    } else {
-                        td.innerText = row[headers.length + colIndex] || "";
-                    }
-                    detailDataRow.appendChild(td);
-                });
-                detailTable.appendChild(detailDataRow);
-            }
-
-            childTd.appendChild(detailTable);
-            childRow.appendChild(childTd);
-            tableBody.appendChild(childRow);
+                childTd.appendChild(detailTable);
+                childRow.appendChild(childTd);
+                tableBody.appendChild(childRow);
+            });
         });
     } catch (error) {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
