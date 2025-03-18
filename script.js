@@ -37,7 +37,7 @@ async function login() {
 }
 
 // 🚀 2. 讀取歷史資料
-// 🚀 讀取歷史資料（並修正 Google Drive 照片連結）
+// 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
     if (!typeSelect) return;
@@ -66,38 +66,48 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, detailHeaders;
-        let photoIndex;
+        let headers, detailHeaders, groupingKey, photoIndex, personIndex;
 
         if (type === "盤點") {
-            headers = ["", "任務名稱", "項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註"];
-            detailHeaders = ["照片連結", "盤點人", "到點感應時間", "上傳時間", "部門"];
-            photoIndex = 8; // 照片連結的索引
+            headers = ["項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
+            detailHeaders = ["盤點人", "到點感應時間", "上傳時間", "部門"];
+            groupingKey = [0, 11]; // 任務名稱 + 上傳時間
+            photoIndex = 7;
+            personIndex = 8;
         } else if (type === "巡檢") {
-            headers = ["", "任務名稱", "點位或項次", "項目", "狀態", "備註"];
-            detailHeaders = ["照片連結", "巡檢人", "到點感應時間", "上傳時間", "部門"];
-            photoIndex = 5;
+            headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
+            detailHeaders = ["巡檢人", "到點感應時間", "上傳時間", "部門"];
+            groupingKey = [0, 8];
+            photoIndex = 4;
+            personIndex = 5;
         } else if (type === "異常處理") {
-            headers = ["", "任務名稱", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-            detailHeaders = [
-                ["照片連結", "負責人", "到點感應時間", "上傳時間", "處理狀態"],
-                ["複查情形", "複查照片連結", "複查時間", "主管"],
-                ["批准或退回", "主管意見", "確認時間", "處理紀錄", "部門"]
-            ];
-            photoIndex = 9;
+            headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
+            detailHeaders = ["負責人", "到點感應時間", "上傳時間", "處理狀態"];
+            groupingKey = [0, 11];
+            photoIndex = 8;
+            personIndex = 9;
         }
 
+        // 📌 **分組處理**
+        let groupedData = {};
+        data.slice(1).forEach(row => {
+            let key = row[groupingKey[0]] + " | " + row[groupingKey[1]];
+            if (!groupedData[key]) groupedData[key] = [];
+            groupedData[key].push(row);
+        });
+
         // 📌 **建立表頭**
-        let headerRow = document.createElement("tr");
-        headers.forEach(header => {
+        let mainHeaderRow = document.createElement("tr");
+        ["", "任務名稱", "上傳時間", "盤點人/負責人"].forEach(header => {
             let th = document.createElement("th");
             th.innerText = header;
-            headerRow.appendChild(th);
+            mainHeaderRow.appendChild(th);
         });
-        tableHeader.appendChild(headerRow);
+        tableHeader.appendChild(mainHeaderRow);
 
-        // 📌 **生成資料行**
-        data.slice(1).forEach((row, index) => {
+        // 📌 **顯示分組資料**
+        Object.keys(groupedData).forEach((groupKey, groupIndex) => {
+            let firstRow = groupedData[groupKey][0]; // 取出分組內第一筆資料
             let tr = document.createElement("tr");
 
             // 🔹 **展開按鈕**
@@ -106,7 +116,7 @@ async function loadHistory() {
             expandButton.innerText = "＋";
             expandButton.classList.add("expand-btn");
             expandButton.onclick = function () {
-                let detailRow = document.getElementById(`detail-${index}`);
+                let detailRow = document.getElementById(`group-${groupIndex}`);
                 let isHidden = detailRow.style.display === "none";
                 detailRow.style.display = isHidden ? "table-row" : "none";
                 expandButton.innerText = isHidden ? "－" : "＋";
@@ -114,66 +124,58 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 📌 **顯示主要欄位**
-            headers.slice(1).forEach((_, colIndex) => {
+            // 📌 **顯示組合欄位**
+            let [taskName, uploadTime] = groupKey.split(" | ");
+            [taskName, uploadTime, firstRow[personIndex]].forEach(value => {
                 let td = document.createElement("td");
-                td.innerText = row[colIndex] || "";
+                td.innerText = value;
                 tr.appendChild(td);
             });
+
             tableBody.appendChild(tr);
 
-            // 📌 **建立詳細資訊行**
+            // 📌 **建立詳細表格**
             let detailRow = document.createElement("tr");
-            detailRow.id = `detail-${index}`;
+            detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
 
             let detailTd = document.createElement("td");
-            detailTd.colSpan = headers.length;
+            detailTd.colSpan = 4;
 
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            if (type === "異常處理") {
-                detailHeaders.forEach(rowGroup => {
-                    let detailHeaderRow = document.createElement("tr");
-                    rowGroup.forEach(header => {
-                        let th = document.createElement("th");
-                        th.innerText = header;
-                        detailHeaderRow.appendChild(th);
-                    });
-                    detailTable.appendChild(detailHeaderRow);
+            // 🔹 **建立標題列**
+            let detailHeaderRow = document.createElement("tr");
+            ["", ...headers].forEach(header => {
+                let th = document.createElement("th");
+                th.innerText = header;
+                detailHeaderRow.appendChild(th);
+            });
+            detailTable.appendChild(detailHeaderRow);
 
-                    let detailDataRow = document.createElement("tr");
-                    rowGroup.forEach((_, colIndex) => {
-                        let td = document.createElement("td");
-                        if (rowGroup[colIndex].includes("照片")) {
-                            let img = document.createElement("img");
-                            img.src = convertGoogleDriveLink(row[photoIndex + colIndex]);
-                            img.alt = "照片";
-                            img.style.width = "50px";
-                            img.style.cursor = "pointer";
-                            img.onclick = () => window.open(row[photoIndex + colIndex], "_blank");
-                            td.appendChild(img);
-                        } else {
-                            td.innerText = row[photoIndex + colIndex] || "";
-                        }
-                        detailDataRow.appendChild(td);
-                    });
-                    detailTable.appendChild(detailDataRow);
-                });
-            } else {
-                let detailHeaderRow = document.createElement("tr");
-                detailHeaders.forEach(header => {
-                    let th = document.createElement("th");
-                    th.innerText = header;
-                    detailHeaderRow.appendChild(th);
-                });
-                detailTable.appendChild(detailHeaderRow);
+            // 🔹 **填充數據**
+            groupedData[groupKey].forEach((row, rowIndex) => {
+                let subTr = document.createElement("tr");
 
-                let detailDataRow = document.createElement("tr");
-                detailHeaders.forEach((_, colIndex) => {
+                // 🔸 **展開按鈕**
+                let subExpandTd = document.createElement("td");
+                let subExpandButton = document.createElement("button");
+                subExpandButton.innerText = "＋";
+                subExpandButton.classList.add("expand-btn");
+                subExpandButton.onclick = function () {
+                    let subDetailRow = document.getElementById(`sub-${groupIndex}-${rowIndex}`);
+                    let isHidden = subDetailRow.style.display === "none";
+                    subDetailRow.style.display = isHidden ? "table-row" : "none";
+                    subExpandButton.innerText = isHidden ? "－" : "＋";
+                };
+                subExpandTd.appendChild(subExpandButton);
+                subTr.appendChild(subExpandTd);
+
+                // 🔸 **填充主要數據**
+                headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    if (colIndex === 0) {
+                    if (colIndex === photoIndex - 1) {
                         let img = document.createElement("img");
                         img.src = convertGoogleDriveLink(row[photoIndex]);
                         img.alt = "照片";
@@ -182,12 +184,23 @@ async function loadHistory() {
                         img.onclick = () => window.open(row[photoIndex], "_blank");
                         td.appendChild(img);
                     } else {
-                        td.innerText = row[photoIndex + colIndex] || "";
+                        td.innerText = row[colIndex] || "";
                     }
-                    detailDataRow.appendChild(td);
+                    subTr.appendChild(td);
                 });
-                detailTable.appendChild(detailDataRow);
-            }
+                detailTable.appendChild(subTr);
+
+                // 🔸 **填充詳細資訊**
+                let subDetailRow = document.createElement("tr");
+                subDetailRow.id = `sub-${groupIndex}-${rowIndex}`;
+                subDetailRow.style.display = "none";
+
+                let subDetailTd = document.createElement("td");
+                subDetailTd.colSpan = headers.length + 1;
+                subDetailTd.innerText = "🔹 詳細資訊：" + detailHeaders.map((h, i) => `${h}: ${row[photoIndex + i + 1] || "N/A"}`).join(" | ");
+                subDetailRow.appendChild(subDetailTd);
+                detailTable.appendChild(subDetailRow);
+            });
 
             detailTd.appendChild(detailTable);
             detailRow.appendChild(detailTd);
@@ -197,6 +210,13 @@ async function loadHistory() {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
     }
 }
+
+// 🔹 **Google Drive 連結轉換**
+function convertGoogleDriveLink(link) {
+    let match = link ? link.match(/\/d\/(.*?)(\/|$)/) : null;
+    return match ? `https://drive.google.com/uc?id=${match[1]}` : "https://via.placeholder.com/50";
+}
+
 
 // 🔹 **Google Drive 連結轉換**
 function convertGoogleDriveLink(link) {
