@@ -214,6 +214,7 @@ async function loadHistory() {
     }
 }
 
+
 // 🔹 **Google Drive 連結轉換**
 function convertGoogleDriveLink(link) {
     let match = link ? link.match(/\/d\/(.*?)(\/|$)/) : null;
