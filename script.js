@@ -66,23 +66,20 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, detailHeaders, groupingKey, photoIndexes, personIndex;
+        let headers, groupingKey, photoIndexes, personIndex;
 
         if (type === "盤點") {
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
-            detailHeaders = ["負責人", "到點感應時間", "上傳時間", "部門"];
             groupingKey = [0, 11]; // 任務名稱 + 上傳時間
             photoIndexes = [8]; // 照片連結
             personIndex = 9;
         } else if (type === "巡檢") {
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
-            detailHeaders = ["負責人", "到點感應時間", "上傳時間", "部門"];
             groupingKey = [0, 8];
             photoIndexes = [5];
             personIndex = 6;
         } else if (type === "異常處理") {
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
-            detailHeaders = ["負責人", "到點感應時間", "上傳時間", "處理狀態"];
             groupingKey = [0, 11];
             photoIndexes = [8, 14]; // 照片連結 & 複查照片連結
             personIndex = 9;
@@ -175,25 +172,30 @@ async function loadHistory() {
                 // 🔸 **填充主要數據**
                 headers.forEach((header, colIndex) => {
                     let td = document.createElement("td");
-                    if (photoIndexes.includes(colIndex + 1)) { // 確保索引正確
+                    if (photoIndexes.includes(colIndex)) { 
                         let imgContainer = document.createElement("div");
-                        let imgLinks = row[colIndex + 1] ? row[colIndex + 1].split(",") : [];
+                        let imgLinks = row[colIndex] ? row[colIndex].split(",") : [];
 
-                        imgLinks.forEach(link => {
-                            let img = document.createElement("img");
-                            let imgUrl = convertGoogleDriveLink(link.trim());
-                            img.src = imgUrl;
-                            img.alt = "照片";
-                            img.style.width = "50px";
-                            img.style.margin = "2px";
-                            img.style.cursor = "pointer";
-                            img.onclick = () => window.open(link.trim(), "_blank");
-                            imgContainer.appendChild(img);
-                        });
+                        if (imgLinks.length > 0 && imgLinks[0] !== "") {
+                            imgLinks.forEach(link => {
+                                let img = document.createElement("img");
+                                let imgUrl = convertGoogleDriveLink(link.trim());
+                                img.src = imgUrl;
+                                img.alt = "照片";
+                                img.style.width = "50px";
+                                img.style.margin = "2px";
+                                img.style.cursor = "pointer";
+                                img.onclick = () => window.open(link.trim(), "_blank");
+                                imgContainer.appendChild(img);
+                            });
+                        } else {
+                            // 照片欄位留白
+                            td.innerText = "";
+                        }
 
                         td.appendChild(imgContainer);
                     } else {
-                        td.innerText = row[colIndex + 1] || "";
+                        td.innerText = row[colIndex] || "";
                     }
                     subTr.appendChild(td);
                 });
@@ -209,13 +211,13 @@ async function loadHistory() {
     }
 }
 
-
 // 🚀 **將 Google Drive 連結轉為可預覽**
 function convertGoogleDriveLink(link) {
     if (!link) return "";
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
+
 
 
 // 🚀 3. 主管審核 - 取得資料
