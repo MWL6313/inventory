@@ -36,7 +36,6 @@ async function login() {
     }
 }
 
-// 🚀 2. 讀取歷史資料
 // 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
@@ -68,24 +67,28 @@ async function loadHistory() {
 
         let headers, groupingKey, photoIndexes, personIndex;
 
+        // 根據不同類型調整欄位（原始資料）
         if (type === "盤點") {
-            // 原始資料：任務名稱, 點位或項次, 項目, 單位, 儲備數, 盤點數, 狀態, 備註, 照片連結, 負責人, 到點感應時間, 上傳時間, 部門
+            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=單位, row[4]=儲備數, row[5]=盤點數, row[6]=狀態, row[7]=備註, row[8]=照片連結, row[9]=負責人, row[10]=到點感應時間, row[11]=上傳時間, row[12]=部門
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
-            groupingKey = [0, 11]; // 以「任務名稱」(row[0]) + 「上傳時間」(row[11])分組
-            photoIndexes = [8];     // 原始資料中，照片連結在第9欄
-            personIndex = 9;        // 負責人在第10欄
+            groupingKey = [0, 11]; // 用 row[0]（任務名稱）與 row[11]（上傳時間）分組
+            // 在詳細資料中，我們要從 row[1] 開始，故照片欄位對應：原始 row[8] → detail index = 8 - 1 = 7
+            photoIndexes = [7];
+            personIndex = 9; // 負責人保持 row[9]，因為在主行我們直接從第一組資料取
         } else if (type === "巡檢") {
-            // 原始資料：任務名稱, 點位或項次, 項目, 狀態, 備註, 照片連結, 負責人, 到點感應時間, 上傳時間, 部門
+            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=狀態, row[4]=備註, row[5]=照片連結, row[6]=負責人, row[7]=到點感應時間, row[8]=上傳時間, row[9]=部門
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
-            groupingKey = [0, 8];   // 任務名稱 (row[0]) + 上傳時間 (row[8])
-            photoIndexes = [5];     // 照片連結在第6欄
-            personIndex = 6;        // 負責人在第7欄
+            groupingKey = [0, 8];
+            // 原始 row[5] → detail index = 5 - 1 = 4
+            photoIndexes = [4];
+            personIndex = 6; // 負責人: row[6]
         } else if (type === "異常處理") {
-            // 原始資料：任務名稱, 點位或項次, 項目, 單位, 儲備量, 盤點量, 狀態, 備註, 照片連結, 負責人, 到點感應時間, 上傳時間, 處理狀態, 複查情形, 複查照片連結, 複查時間, 主管, 批准或退回, 主管意見, 確認時間, 處理紀錄, 部門
+            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=單位, row[4]=儲備量, row[5]=盤點量, row[6]=狀態, row[7]=備註, row[8]=照片連結, row[9]=負責人, row[10]=到點感應時間, row[11]=上傳時間, row[12]=處理狀態, row[13]=複查情形, row[14]=複查照片連結, row[15]=複查時間, row[16]=主管, row[17]=批准或退回, row[18]=主管意見, row[19]=確認時間, row[20]=處理紀錄, row[21]=部門
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
-            groupingKey = [0, 11];  // 任務名稱 (row[0]) + 上傳時間 (row[11])
-            photoIndexes = [8, 14]; // 照片連結在第9欄，複查照片連結在第15欄
-            personIndex = 9;        // 負責人在第10欄
+            groupingKey = [0, 11];
+            // 原始 row[8] → detail index = 8 - 1 = 7; 原始 row[14] → detail index = 14 - 1 = 13
+            photoIndexes = [7, 13];
+            personIndex = 9; // 負責人: row[9]
         }
 
         // 📌 **分組處理**
@@ -107,7 +110,7 @@ async function loadHistory() {
 
         // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
-            let firstRow = groupedData[groupKey][0]; // 分組中第一筆作為代表
+            let firstRow = groupedData[groupKey][0]; // 分組代表
             let tr = document.createElement("tr");
 
             // 🔹 **主展開按鈕**
@@ -124,14 +127,14 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 取出群組的任務名稱與上傳時間 (groupKey已包含任務名稱和上傳時間)
+            // 顯示組合欄位（群組資料已由 row[0] 作為分組，故從 row[0] 取得群組關鍵資訊）
+            // 此處 groupKey 為 "任務名稱 | 上傳時間"
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
             [groupTaskName, groupUploadTime, firstRow[personIndex]].forEach(value => {
                 let td = document.createElement("td");
                 td.innerText = value;
                 tr.appendChild(td);
             });
-
             tableBody.appendChild(tr);
 
             // 📌 **建立詳細表格 (子行)**
@@ -145,8 +148,9 @@ async function loadHistory() {
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 🔹 **建立詳細表頭列**
+            // 🔹 **建立詳細表頭**
             let detailHeaderRow = document.createElement("tr");
+            // 詳細表頭只顯示 headers，不再重複任務名稱
             headers.forEach(h => {
                 let th = document.createElement("th");
                 th.innerText = h;
@@ -157,29 +161,16 @@ async function loadHistory() {
             // 🔹 **填充每筆詳細資料**
             groupedData[groupKey].forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
-                subTr.id = `sub-detail-${groupIndex}-${rowIndex}`; // 唯一 ID
+                subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
 
-                // 🔸 **子行展開按鈕**（用來展開更多細節，如果需要的話）
-                let subExpandTd = document.createElement("td");
-                let subExpandButton = document.createElement("button");
-                subExpandButton.innerText = "＋";
-                subExpandButton.classList.add("expand-btn");
-                subExpandButton.onclick = function () {
-                    let subDetailRow = document.getElementById(`sub-extra-${groupIndex}-${rowIndex}`);
-                    if (!subDetailRow) return;
-                    let isHidden = subDetailRow.style.display === "none";
-                    subDetailRow.style.display = isHidden ? "table-row" : "none";
-                    subExpandButton.innerText = isHidden ? "－" : "＋";
-                };
-                subExpandTd.appendChild(subExpandButton);
-                subTr.appendChild(subExpandTd);
-
-                // 🔸 **填充資料**（注意：資料欄位從 row[1] 開始對應 headers）
+                // 不再放子展開按鈕，避免重複隱藏同一行
+                // 若未來需要額外細節，可另外建立一個子行
+                // 現在直接填充資料
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    // 原始資料對應為 row[colIndex+1]，避免重複任務名稱
+                    // 詳細資料從 row[1] 開始對應 headers[0]
                     let cellData = row[colIndex + 1] || "";
-                    if (photoIndexes.includes(colIndex + 1)) {
+                    if (photoIndexes.includes(colIndex)) {
                         let imgContainer = document.createElement("div");
                         let imgLinks = cellData.split(",").filter(link => link.trim() !== "");
                         imgLinks.forEach(link => {
@@ -199,11 +190,7 @@ async function loadHistory() {
                     }
                     subTr.appendChild(td);
                 });
-
                 detailTable.appendChild(subTr);
-
-                // 如果你需要展開更多細節，可以在此處建立額外的子行（例如 sub-extra-*）
-                // 目前這裡沒有額外細節，所以不建立
             });
 
             detailTd.appendChild(detailTable);
@@ -221,9 +208,6 @@ function convertGoogleDriveLink(link) {
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
-
-
-
 
 
 // 🚀 3. 主管審核 - 取得資料
