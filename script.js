@@ -37,12 +37,16 @@ async function login() {
 }
 
 // 🚀 2. 讀取歷史資料
+// 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
-    const type = document.getElementById("historyType").value;
+    let typeSelect = document.getElementById("historyType");
+    if (!typeSelect) return;
+
+    let type = typeSelect.value;
     console.log("🔹[DEBUG] 讀取歷史資料 - 類型:", type);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/history`, {
+        const response = await fetch(${API_BASE_URL}/history, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ type }),
@@ -56,8 +60,8 @@ async function loadHistory() {
             return;
         }
 
-        const tableHeader = document.getElementById("tableHeader");
-        const tableBody = document.getElementById("historyTable");
+        let tableHeader = document.getElementById("tableHeader");
+        let tableBody = document.getElementById("historyTable");
 
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
@@ -77,11 +81,11 @@ async function loadHistory() {
         } else if (type === "異常處理") {
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
             groupingKey = [0, 11];
-            photoIndexes = [8, 14];
+            photoIndexes = [8, 14]; // 照片連結 & 複查照片連結
             personIndex = 9;
         }
 
-        // 分組處理
+        // 📌 **分組處理**
         let groupedData = {};
         data.slice(1).forEach(row => {
             let key = row[groupingKey[0]] + " | " + row[groupingKey[1]];
@@ -89,7 +93,7 @@ async function loadHistory() {
             groupedData[key].push(row);
         });
 
-        // 建立表頭
+        // 📌 **建立表頭**
         let mainHeaderRow = document.createElement("tr");
         ["", "任務名稱", "上傳時間", "負責人"].forEach(header => {
             let th = document.createElement("th");
@@ -98,76 +102,107 @@ async function loadHistory() {
         });
         tableHeader.appendChild(mainHeaderRow);
 
+        // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
+            let firstRow = groupedData[groupKey][0]; // 取出分組內第一筆資料
             let tr = document.createElement("tr");
-            let [taskName, uploadTime] = groupKey.split(" | ");
-            let firstRow = groupedData[groupKey][0];
 
-            // 主展開按鈕
+            // 🔹 **展開按鈕**
             let expandTd = document.createElement("td");
             let expandButton = document.createElement("button");
             expandButton.innerText = "＋";
             expandButton.classList.add("expand-btn");
-            expandButton.onclick = () => {
-                const detailRow = document.getElementById(`group-${groupIndex}`);
-                const isHidden = detailRow.style.display === "none";
+            expandButton.onclick = function () {
+                let detailRow = document.getElementById(group-${groupIndex});
+                let isHidden = detailRow.style.display === "none";
                 detailRow.style.display = isHidden ? "table-row" : "none";
                 expandButton.innerText = isHidden ? "－" : "＋";
             };
+
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            [taskName, uploadTime, firstRow[personIndex]].forEach(val => {
+            // 📌 **顯示組合欄位**
+            let [taskName, uploadTime] = groupKey.split(" | ");
+            [taskName, uploadTime, firstRow[personIndex]].forEach(value => {
                 let td = document.createElement("td");
-                td.innerText = val;
+                td.innerText = value;
                 tr.appendChild(td);
             });
 
             tableBody.appendChild(tr);
 
-            // 子行
+            // 📌 **建立詳細表格**
             let detailRow = document.createElement("tr");
-            detailRow.id = `group-${groupIndex}`;
+            detailRow.id = group-${groupIndex};
             detailRow.style.display = "none";
+
             let detailTd = document.createElement("td");
             detailTd.colSpan = 4;
 
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 詳細表頭
+            // 🔹 **建立標題列**
             let detailHeaderRow = document.createElement("tr");
-            headers.forEach(h => {
+            ["", ...headers].forEach(header => {
                 let th = document.createElement("th");
-                th.innerText = h;
+                th.innerText = header;
                 detailHeaderRow.appendChild(th);
             });
             detailTable.appendChild(detailHeaderRow);
 
-            groupedData[groupKey].forEach((row) => {
+            // 🔹 **填充數據**
+            groupedData[groupKey].forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
+                subTr.id = sub-detail-${groupIndex}-${rowIndex}; // 確保唯一 ID
+
+                // 🔸 **展開按鈕**
+                let subExpandTd = document.createElement("td");
+                let subExpandButton = document.createElement("button");
+                subExpandButton.innerText = "＋";
+                subExpandButton.classList.add("expand-btn");
+                subExpandButton.onclick = function () {
+                    let subDetailRow = document.getElementById(sub-detail-${groupIndex}-${rowIndex});
+                    let isHidden = subDetailRow.style.display === "none";
+                    subDetailRow.style.display = isHidden ? "table-row" : "none";
+                    subExpandButton.innerText = isHidden ? "－" : "＋";
+                };
+                subExpandTd.appendChild(subExpandButton);
+                subTr.appendChild(subExpandTd);
+
+                // 🔸 **填充主要數據**
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
                     if (photoIndexes.includes(colIndex)) {
-                        let links = row[colIndex + 1] ? row[colIndex + 1].split(",") : [];
-                        links.forEach(link => {
-                            if (link.trim() !== "") {
+                        let imgContainer = document.createElement("div");
+                        let imgLinks = row[colIndex] ? row[colIndex].split(",") : [];
+
+                        if (imgLinks.length > 0 && imgLinks[0] !== "") {
+                            imgLinks.forEach(link => {
                                 let img = document.createElement("img");
-                                img.src = convertGoogleDriveLink(link.trim());
+                                let imgUrl = convertGoogleDriveLink(link.trim());
+                                img.src = imgUrl;
                                 img.alt = "照片";
-                                img.width = 50;
+                                img.style.width = "50px";
+                                img.style.margin = "2px";
+                                img.style.cursor = "pointer";
                                 img.onclick = () => window.open(link.trim(), "_blank");
-                                td.appendChild(img);
+                                imgContainer.appendChild(img);
                             });
+                        } else {
+                            td.innerText = "";
                         }
-                        subTr.appendChild(td);
+
+                        td.appendChild(imgContainer);
                     } else {
-                        td.innerText = row[colIndex + 1] || ""; // 注意這裡+1避免重複任務名稱
-                        subTr.appendChild(td);
+                        td.innerText = row[colIndex+1] || "";
                     }
+                    subTr.appendChild(td);
                 });
                 detailTable.appendChild(subTr);
             });
+
             detailTd.appendChild(detailTable);
             detailRow.appendChild(detailTd);
             tableBody.appendChild(detailRow);
