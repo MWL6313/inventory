@@ -28,7 +28,7 @@ nav a:hover {
 
 /* 主要區塊 */
 .container {
-    max-width: 1200px; /* 設定寬度較寬 */
+    max-width: 1800px; /* 設定寬度較寬 */
     margin: 50px auto;
     background: white;
     padding: 30px;
