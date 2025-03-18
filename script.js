@@ -69,7 +69,7 @@ async function loadHistory() {
         let headers, detailHeaders, groupingKey, photoIndexes, personIndex;
 
         if (type === "盤點") {
-            headers = ["項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
+            headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             detailHeaders = ["負責人", "到點感應時間", "上傳時間", "部門"];
             groupingKey = [0, 11]; // 任務名稱 + 上傳時間
             photoIndexes = [8]; // 照片連結
