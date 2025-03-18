@@ -37,12 +37,8 @@ async function login() {
 }
 
 // 🚀 2. 讀取歷史資料
-// 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
-    let typeSelect = document.getElementById("historyType");
-    if (!typeSelect) return;
-
-    let type = typeSelect.value;
+    const type = document.getElementById("historyType").value;
     console.log("🔹[DEBUG] 讀取歷史資料 - 類型:", type);
 
     try {
@@ -60,8 +56,8 @@ async function loadHistory() {
             return;
         }
 
-        let tableHeader = document.getElementById("tableHeader");
-        let tableBody = document.getElementById("historyTable");
+        const tableHeader = document.getElementById("tableHeader");
+        const tableBody = document.getElementById("historyTable");
 
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
@@ -71,21 +67,21 @@ async function loadHistory() {
         if (type === "盤點") {
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11]; // 任務名稱 + 上傳時間
-            photoIndexes = [7]; // 照片連結
+            photoIndexes = [8]; // 照片連結
             personIndex = 9;
         } else if (type === "巡檢") {
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
-            groupingKey = [0, 8]; // 任務名稱 + 上傳時間
-            photoIndexes = [4];
+            groupingKey = [0, 8];
+            photoIndexes = [5];
             personIndex = 6;
         } else if (type === "異常處理") {
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
-            groupingKey = [0, 11]; // 任務名稱 + 上傳時間
-            photoIndexes = [7, 8]; // 照片連結 & 複查照片連結
+            groupingKey = [0, 11];
+            photoIndexes = [8, 14];
             personIndex = 9;
         }
 
-        // 📌 **分組處理**
+        // 分組處理
         let groupedData = {};
         data.slice(1).forEach(row => {
             let key = row[groupingKey[0]] + " | " + row[groupingKey[1]];
@@ -93,7 +89,7 @@ async function loadHistory() {
             groupedData[key].push(row);
         });
 
-        // 📌 **建立表頭**
+        // 建立表頭
         let mainHeaderRow = document.createElement("tr");
         ["", "任務名稱", "上傳時間", "負責人"].forEach(header => {
             let th = document.createElement("th");
@@ -102,92 +98,76 @@ async function loadHistory() {
         });
         tableHeader.appendChild(mainHeaderRow);
 
-        // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
-            let firstRow = groupedData[groupKey][0]; // 取出分組內第一筆資料
             let tr = document.createElement("tr");
+            let [taskName, uploadTime] = groupKey.split(" | ");
+            let firstRow = groupedData[groupKey][0];
 
-            // 🔹 **展開按鈕**
+            // 主展開按鈕
             let expandTd = document.createElement("td");
             let expandButton = document.createElement("button");
             expandButton.innerText = "＋";
             expandButton.classList.add("expand-btn");
-            expandButton.onclick = function () {
-                let detailRow = document.getElementById(`group-${groupIndex}`);
-                let isHidden = detailRow.style.display === "none";
+            expandButton.onclick = () => {
+                const detailRow = document.getElementById(`group-${groupIndex}`);
+                const isHidden = detailRow.style.display === "none";
                 detailRow.style.display = isHidden ? "table-row" : "none";
                 expandButton.innerText = isHidden ? "－" : "＋";
             };
-
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 📌 **顯示組合欄位**
-            let [taskName, uploadTime] = groupKey.split(" | ");
-            [taskName, uploadTime, firstRow[personIndex]].forEach(value => {
+            [taskName, uploadTime, firstRow[personIndex]].forEach(val => {
                 let td = document.createElement("td");
-                td.innerText = value;
+                td.innerText = val;
                 tr.appendChild(td);
             });
 
             tableBody.appendChild(tr);
 
-            // 📌 **建立詳細表格**
+            // 子行
             let detailRow = document.createElement("tr");
             detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
-
             let detailTd = document.createElement("td");
             detailTd.colSpan = 4;
 
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 🔹 **建立標題列**
+            // 詳細表頭
             let detailHeaderRow = document.createElement("tr");
-            headers.forEach(header => {
+            headers.forEach(h => {
                 let th = document.createElement("th");
-                th.innerText = header;
+                th.innerText = h;
                 detailHeaderRow.appendChild(th);
             });
             detailTable.appendChild(detailHeaderRow);
 
-            // 🔹 **填充數據**
-            groupedData[groupKey].forEach((row, rowIndex) => {
+            groupedData[groupKey].forEach((row) => {
                 let subTr = document.createElement("tr");
-
-                // 🔸 **填充主要數據**
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
                     if (photoIndexes.includes(colIndex)) {
-                        let imgContainer = document.createElement("div");
-                        let imgLinks = row[colIndex] ? row[colIndex].split(",") : [];
-
-                        if (imgLinks.length > 0 && imgLinks[0] !== "") {
-                            imgLinks.forEach(link => {
+                        let links = row[colIndex + 1] ? row[colIndex + 1].split(",") : [];
+                        links.forEach(link => {
+                            if (link.trim() !== "") {
                                 let img = document.createElement("img");
-                                let imgUrl = convertGoogleDriveLink(link.trim());
-                                img.src = imgUrl;
+                                img.src = convertGoogleDriveLink(link.trim());
                                 img.alt = "照片";
-                                img.style.width = "50px";
-                                img.style.margin = "2px";
-                                img.style.cursor = "pointer";
+                                img.width = 50;
                                 img.onclick = () => window.open(link.trim(), "_blank");
-                                imgContainer.appendChild(img);
+                                td.appendChild(img);
                             });
-                        } else {
-                            td.innerText = "";
                         }
-
-                        td.appendChild(imgContainer);
+                        subTr.appendChild(td);
                     } else {
-                        td.innerText = row[colIndex] || "";
+                        td.innerText = row[colIndex + 1] || ""; // 注意這裡+1避免重複任務名稱
+                        subTr.appendChild(td);
                     }
-                    subTr.appendChild(td);
                 });
                 detailTable.appendChild(subTr);
             });
-
             detailTd.appendChild(detailTable);
             detailRow.appendChild(detailTd);
             tableBody.appendChild(detailRow);
@@ -197,12 +177,12 @@ async function loadHistory() {
     }
 }
 
-// 🚀 **將 Google Drive 連結轉為可預覽**
+// 轉換Google Drive圖片連結
 function convertGoogleDriveLink(link) {
-    if (!link) return "";
-    let match = link.match(/[-\w]{25,}/);
+    const match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
+
 
 
 
