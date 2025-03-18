@@ -37,6 +37,7 @@ async function login() {
 }
 
 // 🚀 2. 讀取歷史資料
+// 🚀 2. 讀取歷史資料
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
     if (!typeSelect) return;
@@ -54,8 +55,8 @@ async function loadHistory() {
         const data = await response.json();
         console.log("🟢[DEBUG] 取得歷史資料回應", data);
 
-        if (!Array.isArray(data)) {
-            console.error("🔴[ERROR] API 回傳的數據不是陣列格式:", data);
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn("🟡[WARNING] 沒有可顯示的資料");
             return;
         }
 
@@ -65,15 +66,23 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers = [];
+        let headers, detailHeaders;
         if (type === "盤點") {
-            headers = ["任務名稱", "項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結", "盤點人", "到點感應時間", "上傳時間", "部門"];
+            headers = ["", "任務名稱", "項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註"];
+            detailHeaders = ["照片連結", "盤點人", "到點感應時間", "上傳時間", "部門"];
         } else if (type === "巡檢") {
-            headers = ["任務名稱", "點位或項次", "項目", "狀態", "備註", "照片連結", "巡檢人", "到點感應時間", "上傳時間", "部門"];
+            headers = ["", "任務名稱", "點位或項次", "項目", "狀態", "備註"];
+            detailHeaders = ["照片連結", "巡檢人", "到點感應時間", "上傳時間", "部門"];
         } else if (type === "異常處理") {
-            headers = ["任務名稱", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "負責人", "到點感應時間", "上傳時間", "處理狀態", "複查情形", "複查照片連結", "複查時間", "主管", "批准或退回", "主管意見", "確認時間", "處理紀錄", "部門"];
+            headers = ["", "任務名稱", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
+            detailHeaders = [
+                ["照片連結", "負責人", "到點感應時間", "上傳時間", "處理狀態"],
+                ["複查情形", "複查照片連結", "複查時間", "主管"],
+                ["批准或退回", "主管意見", "確認時間", "處理紀錄", "部門"]
+            ];
         }
 
+        // 建立表頭
         let headerRow = document.createElement("tr");
         headers.forEach(header => {
             let th = document.createElement("th");
@@ -82,20 +91,119 @@ async function loadHistory() {
         });
         tableHeader.appendChild(headerRow);
 
-        data.forEach((row, index) => {
-            if (index === 0) return;
-            let tr = document.createElement("tr");
-            row.forEach(cell => {
+        // 建立資料行
+        data.slice(1).forEach((row, index) => { // 跳過表頭
+            let mainRow = document.createElement("tr");
+            mainRow.classList.add("parent-row");
+
+            // 展開按鈕
+            let expandTd = document.createElement("td");
+            let expandButton = document.createElement("button");
+            expandButton.innerText = "＋";
+            expandButton.classList.add("expand-btn");
+            expandButton.onclick = function () {
+                let childRow = document.getElementById(`child-${index}`);
+                if (childRow.style.display === "none") {
+                    childRow.style.display = "table-row";
+                    expandButton.innerText = "－";
+                } else {
+                    childRow.style.display = "none";
+                    expandButton.innerText = "＋";
+                }
+            };
+            expandTd.appendChild(expandButton);
+            mainRow.appendChild(expandTd);
+
+            // 主行內容
+            headers.slice(1).forEach((_, colIndex) => {
                 let td = document.createElement("td");
-                td.innerText = cell;
-                tr.appendChild(td);
+                td.innerText = row[colIndex] || "";
+                mainRow.appendChild(td);
             });
-            tableBody.appendChild(tr);
+
+            tableBody.appendChild(mainRow);
+
+            // 子行（詳細資料）
+            let childRow = document.createElement("tr");
+            childRow.id = `child-${index}`;
+            childRow.classList.add("child-row");
+            childRow.style.display = "none";
+
+            let childTd = document.createElement("td");
+            childTd.colSpan = headers.length; // 跨所有欄位
+
+            let detailTable = document.createElement("table");
+            detailTable.classList.add("detail-table");
+
+            if (type === "異常處理") {
+                // 異常處理分成三行
+                detailHeaders.forEach(rowGroup => {
+                    let detailHeaderRow = document.createElement("tr");
+                    rowGroup.forEach(header => {
+                        let th = document.createElement("th");
+                        th.innerText = header;
+                        detailHeaderRow.appendChild(th);
+                    });
+                    detailTable.appendChild(detailHeaderRow);
+
+                    let detailDataRow = document.createElement("tr");
+                    rowGroup.forEach((_, colIndex) => {
+                        let td = document.createElement("td");
+
+                        if (rowGroup[colIndex].includes("照片")) {
+                            let img = document.createElement("img");
+                            img.src = row[headers.length + colIndex] || "https://via.placeholder.com/50";
+                            img.alt = "照片";
+                            img.style.width = "50px";
+                            img.style.cursor = "pointer";
+                            img.onclick = () => window.open(row[headers.length + colIndex], "_blank");
+                            td.appendChild(img);
+                        } else {
+                            td.innerText = row[headers.length + colIndex] || "";
+                        }
+                        detailDataRow.appendChild(td);
+                    });
+                    detailTable.appendChild(detailDataRow);
+                });
+            } else {
+                // 盤點 & 巡檢（單行）
+                let detailHeaderRow = document.createElement("tr");
+                detailHeaders.forEach(header => {
+                    let th = document.createElement("th");
+                    th.innerText = header;
+                    detailHeaderRow.appendChild(th);
+                });
+                detailTable.appendChild(detailHeaderRow);
+
+                let detailDataRow = document.createElement("tr");
+                detailHeaders.forEach((_, colIndex) => {
+                    let td = document.createElement("td");
+
+                    if (colIndex === 0) { // 照片連結
+                        let img = document.createElement("img");
+                        img.src = row[headers.length] || "https://via.placeholder.com/50";
+                        img.alt = "照片";
+                        img.style.width = "50px";
+                        img.style.cursor = "pointer";
+                        img.onclick = () => window.open(row[headers.length], "_blank");
+                        td.appendChild(img);
+                    } else {
+                        td.innerText = row[headers.length + colIndex] || "";
+                    }
+                    detailDataRow.appendChild(td);
+                });
+                detailTable.appendChild(detailDataRow);
+            }
+
+            childTd.appendChild(detailTable);
+            childRow.appendChild(childTd);
+            tableBody.appendChild(childRow);
         });
     } catch (error) {
         console.error("🔴[ERROR] 歷史資料載入錯誤：", error);
     }
 }
+
 
 // 🚀 3. 主管審核 - 取得資料
 async function loadReviewData() {
