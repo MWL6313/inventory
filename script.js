@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const API_BASE_URL = "https://cloud-run-api-oddqskcraa-de.a.run.app";  // 替換為你的 Cloud Run API URL;
+const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  // 替換為你的 Cloud Run API URL;
 
 // 🚀 1. 登入功能
 async function login() {
