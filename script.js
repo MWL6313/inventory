@@ -112,7 +112,10 @@ async function loadReviewData() {
     try {
         const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")  // 需包含 Token
+            },
             body: JSON.stringify({ role, department }),
         });
 
@@ -138,6 +141,7 @@ async function loadReviewData() {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
     }
 }
+
 
 // 🚀 4. 主管審核 - 提交
 async function submitReview(decision) {
