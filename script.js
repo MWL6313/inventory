@@ -66,26 +66,26 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, detailHeaders, groupingKey, photoIndex, personIndex;
+        let headers, detailHeaders, groupingKey, photoIndexes, personIndex;
 
         if (type === "盤點") {
             headers = ["項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             detailHeaders = ["盤點人", "到點感應時間", "上傳時間", "部門"];
             groupingKey = [0, 11]; // 任務名稱 + 上傳時間
-            photoIndex = 7;
+            photoIndexes = [7]; // 照片連結
             personIndex = 8;
         } else if (type === "巡檢") {
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
             detailHeaders = ["巡檢人", "到點感應時間", "上傳時間", "部門"];
             groupingKey = [0, 8];
-            photoIndex = 4;
+            photoIndexes = [4];
             personIndex = 5;
         } else if (type === "異常處理") {
-            headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
+            headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
             detailHeaders = ["負責人", "到點感應時間", "上傳時間", "處理狀態"];
             groupingKey = [0, 11];
-            photoIndex = 8;
-            personIndex = 9;
+            photoIndexes = [8, 9]; // 照片連結 & 複查照片連結
+            personIndex = 10;
         }
 
         // 📌 **分組處理**
@@ -175,14 +175,17 @@ async function loadHistory() {
                 // 🔸 **填充主要數據**
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    if (colIndex === photoIndex - 1) {
-                        let img = document.createElement("img");
-                        img.src = convertGoogleDriveLink(row[photoIndex]);
-                        img.alt = "照片";
-                        img.style.width = "50px";
-                        img.style.cursor = "pointer";
-                        img.onclick = () => window.open(row[photoIndex], "_blank");
-                        td.appendChild(img);
+                    if (photoIndexes.includes(colIndex)) {
+                        let imgLink = convertGoogleDriveLink(row[colIndex]);
+                        if (imgLink) {
+                            let img = document.createElement("img");
+                            img.src = imgLink;
+                            img.alt = "照片";
+                            img.style.width = "50px";
+                            img.style.cursor = "pointer";
+                            img.onclick = () => window.open(row[colIndex], "_blank");
+                            td.appendChild(img);
+                        } // **若無照片則保持空白**
                     } else {
                         td.innerText = row[colIndex] || "";
                     }
@@ -197,7 +200,7 @@ async function loadHistory() {
 
                 let subDetailTd = document.createElement("td");
                 subDetailTd.colSpan = headers.length + 1;
-                subDetailTd.innerText = "🔹 詳細資訊：" + detailHeaders.map((h, i) => `${h}: ${row[photoIndex + i + 1] || "N/A"}`).join(" | ");
+                subDetailTd.innerText = "🔹 詳細資訊：" + detailHeaders.map((h, i) => `${h}: ${row[photoIndexes[photoIndexes.length - 1] + i + 1] || "N/A"}`).join(" | ");
                 subDetailRow.appendChild(subDetailTd);
                 detailTable.appendChild(subDetailRow);
             });
@@ -214,17 +217,9 @@ async function loadHistory() {
 // 🔹 **Google Drive 連結轉換**
 function convertGoogleDriveLink(link) {
     let match = link ? link.match(/\/d\/(.*?)(\/|$)/) : null;
-    return match ? `https://drive.google.com/uc?id=${match[1]}` : "https://via.placeholder.com/50";
+    return match ? `https://drive.google.com/uc?id=${match[1]}` : "";
 }
 
-
-// 🔹 **Google Drive 連結轉換**
-function convertGoogleDriveLink(link) {
-    if (!link || !link.includes("drive.google.com")) return "https://via.placeholder.com/50";
-
-    let match = link.match(/\/d\/(.*?)(\/|$)/);
-    return match ? `https://drive.google.com/uc?id=${match[1]}` : "https://via.placeholder.com/50";
-}
 
 
 // 🚀 3. 主管審核 - 取得資料
