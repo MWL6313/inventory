@@ -3,15 +3,16 @@ const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";
 
 // 更新右上角顯示的使用者資訊
 function updateUserInfo() {
+    const account = localStorage.getItem("account") || "未知帳號";
     const department = localStorage.getItem("department") || "未知部門";
     const role = localStorage.getItem("role") || "未知角色";
-    document.getElementById("userDetails").innerText = `部門：${department} | 角色：${role}`;
+    document.getElementById("userDetails").innerText = `帳號：${account} | 部門：${department} | 角色：${role}`;
 }
 
 // 登出功能：清除 localStorage 並導向登入頁面
 function logout() {
     localStorage.clear();
-    window.location.href = "index.html";
+    window.location.href = "indel.html";
 }
 
 // 頁面載入時更新使用者資訊
@@ -76,11 +77,13 @@ async function login() {
         console.log("🟢[DEBUG] 登入 API 回應", data);
 
         if (data.success) {
-            // 儲存 token、部門與角色資訊到 localStorage
-            localStorage.setItem("token", data.token);  // 新增 token 儲存
+            localStorage.setItem("token", data.token);
             localStorage.setItem("department", data.department);
             localStorage.setItem("role", data.role);
+            localStorage.setItem("account", data.account); // 儲存登入帳號
             window.location.href = "dashboard.html";
+        }
+
         } else {
             document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
         }
