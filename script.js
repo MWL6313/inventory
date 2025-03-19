@@ -65,7 +65,9 @@ async function login() {
             localStorage.setItem("token", data.token);
             localStorage.setItem("department", data.department);
             localStorage.setItem("role", data.role);
-            localStorage.setItem("account", data.account); // 儲存登入帳號
+            // 使用 input 框中的帳號來存入 localStorage
+            const account = document.getElementById("account").value.trim();
+            localStorage.setItem("account", account);
             window.location.href = "dashboard.html";
 
         } else {
