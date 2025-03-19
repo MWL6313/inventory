@@ -498,6 +498,11 @@ async function loadReviewData() {
                 select.appendChild(option);
             });
         }
+        // 如果下拉選單只有一個有效選項，則自動顯示詳細資料
+        if (select.options.length === 1 && select.options[0].value !== "") {
+          displayReviewDetails(select.options[0].value);
+        }
+
     } catch (error) {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
     }
@@ -535,6 +540,8 @@ function createThumbnail(link) {
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
+
+    
     // 取得表頭 (第一筆資料)
     const header = reviewDataGlobal[0];
     // 篩選出所有該任務的資料（從 data[1] 開始）
