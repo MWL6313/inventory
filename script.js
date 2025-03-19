@@ -548,6 +548,8 @@ function displayReviewDetails(taskName) {
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
     // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    // 設定子行的子行各欄位寬度（包括第一個展開按鈕欄）
+    const subchildWidths = ["5%", "15%", "15%", "15%", "15%", "20%", "10%", "10%"];
 
     // 取得顯示詳細資料的容器
     const container = document.getElementById("reviewDetails");
@@ -601,7 +603,7 @@ function displayReviewDetails(taskName) {
         createThumbnail(taskRows[0][8]), // 照片連結 (縮圖)
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
-    // 注意：由於父行有 8 欄（包含展開按鈕），這裡應該依照順序插入資料到後 7 個欄位
+    // 注意：父行總共 8 欄（第一欄為展開按鈕），故後 7 個欄位依序加入
     parentValues.forEach(value => {
         let td = document.createElement("td");
         td.innerHTML = value;
@@ -668,24 +670,27 @@ function displayReviewDetails(taskName) {
 
         // 子行的子行標題
         let subchildHeaderRow = document.createElement("tr");
-        subchildHeaders.forEach(text => {
+        subchildHeaders.forEach((text, j) => {
             let th = document.createElement("th");
             th.innerText = text;
             th.style.border = "1px solid #ddd";
             th.style.padding = "8px";
+            // 設定每個標題欄位的寬度
+            th.style.width = subchildWidths[j] || "auto";
             subchildHeaderRow.appendChild(th);
         });
         subchildSection.appendChild(subchildHeaderRow);
 
         // 子行的子行資料：依序填入複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
         let subchildRow = document.createElement("tr");
-        // 展開按鈕欄位，這邊可留空
+        // 展開按鈕欄位，這邊可留空，並設定寬度（第一欄）
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
+        emptyTd.style.width = subchildWidths[0] || "auto";
         subchildRow.appendChild(emptyTd);
 
         let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
-        subchildIndices.forEach(i => {
+        subchildIndices.forEach((i, j) => {
             let td = document.createElement("td");
             if (i === 14) {
                 td.innerHTML = createThumbnail(row[i]);
@@ -694,6 +699,8 @@ function displayReviewDetails(taskName) {
             }
             td.style.border = "1px solid #ddd";
             td.style.padding = "8px";
+            // 設定每個資料欄位的寬度，對應 subchildWidths 陣列中 j+1 的位置（因為第一欄已處理）
+            td.style.width = subchildWidths[j+1] || "auto";
             subchildRow.appendChild(td);
         });
         subchildSection.appendChild(subchildRow);
@@ -705,6 +712,7 @@ function displayReviewDetails(taskName) {
     container.innerHTML = "";
     container.appendChild(table);
 }
+
 
 
 
