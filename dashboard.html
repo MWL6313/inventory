@@ -14,7 +14,13 @@
             window.location.href = "indel.html";
         }
     </script>
-
+    
+    <!-- 右上角使用者資訊 -->
+    <div id="userInfo" style="position: fixed; top: 10px; right: 10px; background: #f0f0f0; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <span id="userDetails"></span>
+        <button onclick="logout()" style="margin-left: 10px;">登出</button>
+    </div>
+    
     <nav>
         <a href="history.html">歷史資料</a> |
         <a href="review.html">主管審核</a>
