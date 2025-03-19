@@ -1,3 +1,32 @@
+/* 右上角使用者資訊樣式 */
+#userInfo {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 16px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 右上角各元素排列 */
+#userInfo span,
+#userInfo div {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* 登出按鈕樣式：沿用全局按鈕樣式，可根據需要微調 */
+#userInfo button {
+    width: auto;
+    padding: 8px 12px;
+    margin: 0;
+    font-size: 16px;
+}
+
 /* 全局樣式 */
 body {
     font-family: Arial, sans-serif;
