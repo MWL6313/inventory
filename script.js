@@ -676,33 +676,50 @@ function displayReviewDetails(taskName) {
         childSection.appendChild(childRow);
 
         // --- 子行的子行區段 ---
-        let subchildSection = document.createElement("tbody");
-        subchildSection.id = "subchildSection-" + idx;
-        subchildSection.style.display = "none";
-
-        // 子行的子行標題
-        let subchildHeaderRow = document.createElement("tr");
-        subchildHeaders.forEach((text, j) => {
+        // 用一個新的 <tr> 包含一個單一的 <td>，這個 <td> 的 colSpan 要覆蓋整個外層表格的欄位數（假設外層表格有 8 欄）
+        let subchildRowWrapper = document.createElement("tr");
+        let subchildCell = document.createElement("td");
+        subchildCell.colSpan = parentHeaders.length; // 父行總欄數（例如8欄）
+        subchildCell.style.padding = "0"; // 取消外層的padding
+        subchildCell.style.border = "none";
+        
+        // 建立內層（巢狀）表格，專門用於顯示子行的子行資料，並獨立設定寬度
+        let innerTable = document.createElement("table");
+        innerTable.style.width = "100%";
+        innerTable.style.borderCollapse = "collapse";
+        innerTable.style.tableLayout = "fixed"; // 固定佈局，使 <colgroup> 生效
+        
+        // 定義內層表格的 colgroup，欄位數與 subchildHeaders 數量一致
+        const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
+        let colgroup = document.createElement("colgroup");
+        subchildWidths.forEach(width => {
+            let col = document.createElement("col");
+            col.style.width = width;
+            colgroup.appendChild(col);
+        });
+        innerTable.appendChild(colgroup);
+        
+        // 建立內層表格的標題列
+        let innerHeaderRow = document.createElement("tr");
+        subchildHeaders.forEach(text => {
             let th = document.createElement("th");
             th.innerText = text;
             th.style.border = "1px solid #ddd";
             th.style.padding = "8px";
-            // 設定每個標題欄位的寬度
-            th.style.width = subchildWidths[j] || "auto";
-            subchildHeaderRow.appendChild(th);
+            innerHeaderRow.appendChild(th);
         });
-        subchildSection.appendChild(subchildHeaderRow);
-
-        // 子行的子行資料：依序填入複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
-        let subchildRow = document.createElement("tr");
-        // 展開按鈕欄位，這邊可留空，並設定寬度（第一欄）
+        innerTable.appendChild(innerHeaderRow);
+        
+        // 建立內層表格的資料列
+        let innerDataRow = document.createElement("tr");
+        // 由於第一欄為展開按鈕（但在內層表格裡直接顯示空白即可）
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
-        emptyTd.style.width = subchildWidths[0] || "auto";
-        subchildRow.appendChild(emptyTd);
-
+        innerDataRow.appendChild(emptyTd);
+        
+        // 依序填入：複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
         let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
-        subchildIndices.forEach((i, j) => {
+        subchildIndices.forEach(i => {
             let td = document.createElement("td");
             if (i === 14) {
                 td.innerHTML = createThumbnail(row[i]);
@@ -711,13 +728,17 @@ function displayReviewDetails(taskName) {
             }
             td.style.border = "1px solid #ddd";
             td.style.padding = "8px";
-            // 設定每個資料欄位的寬度，對應 subchildWidths 陣列中 j+1 的位置（因為第一欄已處理）
-            td.style.width = subchildWidths[j + 1] || "auto";
-            subchildRow.appendChild(td);
+            innerDataRow.appendChild(td);
         });
-        subchildSection.appendChild(subchildRow);
+        innerTable.appendChild(innerDataRow);
+        
+        // 將內層表格放入 subchildCell，再放入 subchildRowWrapper
+        subchildCell.appendChild(innerTable);
+        subchildRowWrapper.appendChild(subchildCell);
+        
+        // 最後將子行的子行（巢狀表格）加入到子行區段
+        childSection.appendChild(subchildRowWrapper);
 
-        childSection.appendChild(subchildSection);
     });
 
     table.appendChild(childSection);
