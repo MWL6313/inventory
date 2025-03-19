@@ -733,40 +733,38 @@ function insertReviewInputs() {
 
 
 // 6. 主管審核 - 提交
+
 async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
     let role = localStorage.getItem("role");
-    // 取得動態插入的欄位值
+
     let account = document.getElementById("account").value.trim();
     let responsible = document.getElementById("responsible").value.trim();
     let project = document.getElementById("project").value.trim();
     let uploadTime = document.getElementById("uploadTime").value.trim();
 
-    // 假設有提交按鈕與 loading spinner
     let submitBtn = document.getElementById("submitBtn");
+    let submitBtnReject = document.getElementById("submitBtnReject");
     let spinner = document.getElementById("spinner");
 
-    console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, account, responsible, project, uploadTime });
-
     if (!taskName || !comment || !account || !responsible || !project || !uploadTime) {
-        alert("請選擇任務並輸入所有必要的審核資料");
+        alert("資料不完整，無法提交");
         return;
     }
 
-    if (submitBtn) submitBtn.disabled = true;
-    if (spinner) spinner.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtnReject.disabled = true;
+    spinner.style.display = 'block';
 
     try {
         const response = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // 傳送 account (登入帳號) 與 responsible (任務負責人) 等資料
             body: JSON.stringify({ taskName, decision, comment, role, account, responsible, project, uploadTime }),
         });
 
         const data = await response.json();
-        console.log("🟢[DEBUG] 提交審核回應", data);
 
         if (data.success) {
             alert("審核成功，新的狀態：" + data.newStatus);
@@ -775,17 +773,20 @@ async function submitReview(decision) {
             alert("審核失敗：" + data.message);
         }
     } catch (error) {
-        console.error("🔴[ERROR] 審核提交錯誤：", error);
         alert("系統錯誤，請稍後再試");
     } finally {
-        if (submitBtn) submitBtn.disabled = false;
-        if (spinner) spinner.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtnReject.disabled = false;
+        spinner.style.display = 'none';
     }
 }
 
-
-// 在 DOMContentLoaded 時呼叫載入函式與動態插入輸入欄位
+// DOMContentLoaded 初始化
 window.addEventListener("DOMContentLoaded", () => {
-    loadReviewData();
     insertReviewInputs();
+    loadReviewData();
+
+    document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
+    document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
 });
+
