@@ -540,8 +540,6 @@ function createThumbnail(link) {
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
-
-    
     // 取得表頭 (第一筆資料)
     const header = reviewDataGlobal[0];
     // 篩選出所有該任務的資料（從 data[1] 開始）
@@ -555,17 +553,18 @@ function displayReviewDetails(taskName) {
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
     // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
-    // 設定子行的子行各欄位寬度（包括第一個展開按鈕欄）
+    // 設定子行的子行各欄位寬度（包含第一欄展開按鈕），請依需求調整
     const subchildWidths = ["5%", "15%", "15%", "15%", "15%", "20%", "10%", "10%"];
 
     // 取得顯示詳細資料的容器
     const container = document.getElementById("reviewDetails");
     container.innerHTML = "";
 
-    // 建立一個表格來呈現階層資料
+    // 建立一個表格來呈現階層資料，並設定固定佈局
     const table = document.createElement("table");
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
+    table.style.tableLayout = "fixed"; // 使欄位寬度生效
 
     // --- 父行區段 ---
     // 父行標題
@@ -602,15 +601,14 @@ function displayReviewDetails(taskName) {
     // 其他父行欄位資料：依序填入
     // 任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、照片連結(8)（縮圖）、資料夾位置(22)（超連結）
     let parentValues = [
-        taskRows[0][0],         // 任務名稱
-        taskRows[0][10],        // 到點感應時間
-        taskRows[0][11],        // 上傳時間
-        taskRows[0][9],         // 負責人
-        taskRows[0][21],        // 部門
-        createThumbnail(taskRows[0][8]), // 照片連結 (縮圖)
+        taskRows[0][0],
+        taskRows[0][10],
+        taskRows[0][11],
+        taskRows[0][9],
+        taskRows[0][21],
+        createThumbnail(taskRows[0][8]),
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
-    // 注意：父行總共 8 欄（第一欄為展開按鈕），故後 7 個欄位依序加入
     parentValues.forEach(value => {
         let td = document.createElement("td");
         td.innerHTML = value;
@@ -707,7 +705,7 @@ function displayReviewDetails(taskName) {
             td.style.border = "1px solid #ddd";
             td.style.padding = "8px";
             // 設定每個資料欄位的寬度，對應 subchildWidths 陣列中 j+1 的位置（因為第一欄已處理）
-            td.style.width = subchildWidths[j+1] || "auto";
+            td.style.width = subchildWidths[j + 1] || "auto";
             subchildRow.appendChild(td);
         });
         subchildSection.appendChild(subchildRow);
@@ -719,6 +717,7 @@ function displayReviewDetails(taskName) {
     container.innerHTML = "";
     container.appendChild(table);
 }
+
 
 
 
