@@ -398,6 +398,66 @@ function convertGoogleDriveLink(link) {
 let reviewDataGlobal = [];
 
 // 載入待審核資料
+// async function loadReviewData() {
+//     let role = localStorage.getItem("role");
+//     let department = localStorage.getItem("department");
+//     let account = localStorage.getItem("account"); // 登入帳號
+
+//     console.log("🔹[DEBUG] 取得主管審核資料", { role, department, account });
+
+//     if (!role || !department || !account) {
+//         console.error("🔴[ERROR] 角色、部門或帳號資訊缺失");
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
+//             method: "POST",
+//             headers: { 
+//                 "Content-Type": "application/json",
+//                 "Authorization": localStorage.getItem("token")
+//             },
+//             body: JSON.stringify({ role, department }),
+//         });
+
+//         const data = await response.json();
+//         console.log("🟢[DEBUG] 取得審核資料回應", data);
+
+//         reviewDataGlobal = data;
+
+//         let select = document.getElementById("reviewList");
+//         select.innerHTML = "";
+
+//         if (data.length === 0) {
+//             select.innerHTML = `<option value="">目前沒有待審核的資料</option>`;
+//         } else {
+//             const taskNames = new Set();
+//             for (let i = 1; i < data.length; i++) {
+//                 taskNames.add(data[i][0]);
+//             }
+//             taskNames.forEach(taskName => {
+//                 let option = document.createElement("option");
+//                 option.value = taskName;
+//                 option.innerText = taskName;
+//                 select.appendChild(option);
+//             });
+//         }
+
+//         if (select.value !== "") {
+//             displayReviewDetails(select.value);
+//         }
+
+//         select.addEventListener("change", function() {
+//             if (this.value !== "") {
+//                 displayReviewDetails(this.value);
+//             }
+//         });
+
+//     } catch (error) {
+//         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
+//     }
+// }
+
 async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
@@ -423,6 +483,15 @@ async function loadReviewData() {
         const data = await response.json();
         console.log("🟢[DEBUG] 取得審核資料回應", data);
 
+        // 若後端回傳 success 為 false，顯示訊息於下拉選單及詳細區塊，然後結束
+        if (data.success === false) {
+            let select = document.getElementById("reviewList");
+            select.innerHTML = `<option value="">${data.message}</option>`;
+            document.getElementById("reviewDetails").innerHTML = `<p>${data.message}</p>`;
+            return;
+        }
+
+        // 將資料存入全域變數
         reviewDataGlobal = data;
 
         let select = document.getElementById("reviewList");
@@ -457,6 +526,7 @@ async function loadReviewData() {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
     }
 }
+
 
 // 顯示任務詳細資料 (同時自動填入隱藏欄位)
 // 顯示任務詳細資料 (同時自動填入隱藏欄位)
