@@ -5,7 +5,8 @@
     <title>登入</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
-
+    <!-- 使用 defer 屬性確保 script 在 DOM 載入後執行 -->
+    <script src="script.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -15,7 +16,5 @@
         <button onclick="login()">登入</button>
         <p id="message"></p>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
