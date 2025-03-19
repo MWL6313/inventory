@@ -5,7 +5,7 @@
   <title>主管審核 - 詳細資料</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
-  <!-- 使用 defer 屬性確保在 DOM 載入後執行 -->
+  <!-- 使用 defer 也能確保 script 在 DOM 解析後執行 -->
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -40,7 +40,7 @@
     <!-- 詳細資料區塊 -->
     <div id="reviewDetails" style="margin-top: 20px;"></div>
     
-    <!-- 動態插入輸入欄位區塊 -->
+    <!-- 動態插入輸入欄位區塊 (insertReviewInputs() 會將 account、responsible、project、uploadTime 插入這裡) -->
     <div id="reviewInputs"></div>
     
     <!-- 主管意見輸入 -->
@@ -52,12 +52,11 @@
     <div id="spinner" style="display:none;">Loading...</div>
   </div>
   
-  <!-- 在 DOMContentLoaded 時呼叫資料載入與事件綁定 -->
+  <!-- 在 DOMContentLoaded 時執行資料載入與事件綁定 -->
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       loadReviewData();
       insertReviewInputs();
-      // 綁定按鈕事件，確保此時所有動態元素已存在
       document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
       document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
     });
