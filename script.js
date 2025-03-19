@@ -752,8 +752,9 @@ async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
     let role = localStorage.getItem("role");
-    // 假設負責人 (account)、項目 (project) 與上傳時間 (uploadTime) 為 input 欄位
+    // 取得目前登入的帳號 (account) 與負責人 (responsible)
     let account = document.getElementById("account").value.trim();
+    let responsible = document.getElementById("responsible").value.trim();
     let project = document.getElementById("project").value.trim();
     let uploadTime = document.getElementById("uploadTime").value.trim();
 
@@ -761,10 +762,10 @@ async function submitReview(decision) {
     let submitBtn = document.getElementById("submitBtn");
     let spinner = document.getElementById("spinner");
 
-    console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, account, project, uploadTime });
+    console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, account, responsible, project, uploadTime });
 
-    // 檢查 taskName、comment、account、project 與 uploadTime 是否為空
-    if (!taskName || !comment || !account || !project || !uploadTime) {
+    // 檢查 taskName、comment、account、responsible、project 與 uploadTime 是否為空
+    if (!taskName || !comment || !account || !responsible || !project || !uploadTime) {
         alert("請選擇任務並輸入所有必要的審核資料");
         return;
     }
@@ -777,7 +778,8 @@ async function submitReview(decision) {
         const response = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskName, decision, comment, role, account, project, uploadTime }),
+            // 將 responsible 一併傳給後端，用於篩選任務（J欄），account 為登入帳號（Q欄）
+            body: JSON.stringify({ taskName, decision, comment, role, account, responsible, project, uploadTime }),
         });
 
         const data = await response.json();
