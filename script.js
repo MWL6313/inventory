@@ -79,42 +79,50 @@ async function login() {
     }
 }
 
+
 // 設定閒置超時時間：30 分鐘（以毫秒計算）
-const idleTimeout = 30 * 60 * 1000; // 30分鐘
-let lastActivity = Date.now(); // 最後活動時間
-let countdownInterval;
+document.addEventListener("DOMContentLoaded", function() {
+    // 設定閒置超時時間：30 分鐘（以毫秒計算）
+    const idleTimeout = 30 * 60 * 1000; // 30 分鐘
+    let lastActivity = Date.now(); // 最後活動時間
+    let countdownInterval;
 
-// 重置閒置計時器
-function resetIdleTimer() {
-    lastActivity = Date.now();
-}
+    // 重置閒置計時器
+    function resetIdleTimer() {
+        lastActivity = Date.now();
+    }
 
-// 監聽常見使用者操作事件
-["mousemove", "keydown", "scroll", "click"].forEach(event => {
-    window.addEventListener(event, resetIdleTimer);
+    // 監聽常見使用者操作事件
+    ["mousemove", "keydown", "scroll", "click"].forEach(event => {
+        window.addEventListener(event, resetIdleTimer);
+    });
+
+    // 檢查閒置狀態並更新倒數顯示
+    function checkIdle() {
+        const now = Date.now();
+        const elapsed = now - lastActivity;
+        const remaining = idleTimeout - elapsed;
+        
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            logout(); // 確保 logout() 函式已定義
+        } else {
+            // 計算剩餘分鐘與秒數
+            let totalSeconds = Math.floor(remaining / 1000);
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            // 更新倒數顯示（格式：MM:SS）
+            const countdownElement = document.getElementById("idleCountdown");
+            if(countdownElement) {
+                countdownElement.innerText = `自動登出倒數 ${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            }
+        }
+    }
+
+    // 啟動倒數檢查，每秒更新一次
+    countdownInterval = setInterval(checkIdle, 1000);
 });
 
-// 檢查閒置狀態並更新倒數顯示
-function checkIdle() {
-    const now = Date.now();
-    const elapsed = now - lastActivity;
-    const remaining = idleTimeout - elapsed;
-    
-    if (remaining <= 0) {
-        clearInterval(countdownInterval);
-        logout();
-    } else {
-        // 計算剩餘分鐘與秒數
-        let totalSeconds = Math.floor(remaining / 1000);
-        let minutes = Math.floor(totalSeconds / 60);
-        let seconds = totalSeconds % 60;
-        // 更新倒數顯示（格式：MM:SS）
-        document.getElementById("idleCountdown").innerText = `自動登出倒數 ${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    }
-}
-
-// 啟動倒數檢查，每秒更新一次
-countdownInterval = setInterval(checkIdle, 1000);
 
 
 // 更新右上角顯示的使用者資訊
