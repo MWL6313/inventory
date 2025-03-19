@@ -1,7 +1,7 @@
 // 取得 API 基本 URL
 const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
 
-// 🚀 登入功能
+// 🚀 登入功能（保持不變）
 async function login() {
     let account = document.getElementById("account").value.trim();
     let password = document.getElementById("password").value.trim();
@@ -64,7 +64,7 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, groupingKey, photoIndexes, personIndex, deptIndex;
+        let headers, groupingKey, photoIndexes, personIndex, deptIndex, repIndex;
         let isAbnormal = false;
         let extraFields = null; // 僅針對異常處理
 
@@ -102,7 +102,7 @@ async function loadHistory() {
             };
         }
 
-        // 📌 分組處理
+        // 📌 分組處理：以「任務名稱 | 上傳時間」為 key
         let groupedData = {};
         data.slice(1).forEach(row => {
             let key = row[groupingKey[0]] + " | " + row[groupingKey[1]];
@@ -110,7 +110,7 @@ async function loadHistory() {
             groupedData[key].push(row);
         });
 
-        // 📌 建立主表頭 (5欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門, 資料夾位置)
+        // 📌 建立主表頭 (6 欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門, 資料夾位置)
         let mainHeaderRow = document.createElement("tr");
         ["", "任務名稱", "上傳時間", "負責人", "部門", "資料夾位置"].forEach(header => {
             let th = document.createElement("th");
@@ -139,11 +139,21 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 顯示群組關鍵資料：任務名稱、上傳時間、負責人、部門、資料夾位置
+            // 主表顯示：從群組 key取得任務名稱、上傳時間，再從第一筆記錄取負責人、部門及資料夾位置
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
-            [groupTaskName, groupUploadTime, firstRow[personIndex], firstRow[deptIndex], firstRow[reptIndex]].forEach(value => {
+            let mainValues = [groupTaskName, groupUploadTime, firstRow[personIndex], firstRow[deptIndex], firstRow[repIndex]];
+            mainValues.forEach((value, idx) => {
                 let td = document.createElement("td");
-                td.innerText = value;
+                // 如果是資料夾位置 (最後一欄)
+                if (idx === mainValues.length - 1 && value) {
+                    let a = document.createElement("a");
+                    a.href = value;
+                    a.target = "_blank";
+                    a.innerText = "報表位置";
+                    td.appendChild(a);
+                } else {
+                    td.innerText = value;
+                }
                 tr.appendChild(td);
             });
             tableBody.appendChild(tr);
@@ -153,11 +163,11 @@ async function loadHistory() {
             detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
             let detailTd = document.createElement("td");
-            detailTd.colSpan = headers.length + 1;  // 主表有5欄
+            detailTd.colSpan = 6;  // 主表有6欄
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 詳細表頭 (第一欄為空對應展開按鈕)
+            // 詳細表頭 (第一欄對應展開按鈕)
             let detailHeaderRow = document.createElement("tr");
             let emptyTh = document.createElement("th");
             emptyTh.innerText = "";
@@ -174,7 +184,7 @@ async function loadHistory() {
                 let subTr = document.createElement("tr");
                 subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
 
-                // 若為異常處理，於第一欄加入額外展開按鈕；否則第一欄空白
+                // 若為異常處理，於第一欄加入額外展開按鈕；否則空白
                 if (isAbnormal && extraFields) {
                     let extraToggleTd = document.createElement("td");
                     let extraToggleButton = document.createElement("button");
@@ -195,12 +205,11 @@ async function loadHistory() {
                     subTr.appendChild(emptyTd);
                 }
 
-                // 填充詳細資料，從 row[1] 開始對應 headers
+                // 填充詳細資料：從 row[1] 開始對應 headers（避免重複任務名稱）
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
                     let cellData = row[colIndex + 1] || "";
                     if (photoIndexes.includes(colIndex + 1)) {
-                        // 判斷如果該欄位為空或顯示"未提供照片"，則留白
                         if (cellData.trim() === "" || cellData.trim() === "未提供照片") {
                             td.innerText = "";
                         } else {
@@ -226,7 +235,7 @@ async function loadHistory() {
                 });
                 detailTable.appendChild(subTr);
 
-                // 如果異常處理，加入子行的子行以表格形式顯示額外資訊
+                // 如果異常處理，加入子行的子行以內部表格形式顯示額外資訊
                 if (isAbnormal && extraFields) {
                     let extraTr = document.createElement("tr");
                     extraTr.id = `sub-extra-${groupIndex}-${rowIndex}`;
@@ -234,7 +243,6 @@ async function loadHistory() {
                     let extraTd = document.createElement("td");
                     extraTd.colSpan = headers.length + 1;
                     
-                    // 建立內部表格顯示額外資訊
                     let extraTable = document.createElement("table");
                     extraTable.style.width = "100%";
                     extraTable.style.borderCollapse = "collapse";
@@ -251,7 +259,6 @@ async function loadHistory() {
                     let extraDataRow = document.createElement("tr");
                     extraFields.extraIndexes.forEach((extraIndex, idx) => {
                         let td = document.createElement("td");
-                        // 如果這個欄位為複查照片連結，也用圖片顯示方式
                         if (extraFields.extraHeaders[idx] === "複查照片連結") {
                             let extraCell = row[extraIndex] || "";
                             if (extraCell.trim() === "" || extraCell.trim() === "未提供照片") {
@@ -302,6 +309,7 @@ function convertGoogleDriveLink(link) {
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
+
 
 
 
