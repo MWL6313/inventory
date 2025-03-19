@@ -1,6 +1,23 @@
 // 取得 API 基本 URL
 const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
 
+// 更新右上角顯示的使用者資訊
+function updateUserInfo() {
+    const department = localStorage.getItem("department") || "未知部門";
+    const role = localStorage.getItem("role") || "未知角色";
+    document.getElementById("userDetails").innerText = `部門：${department} | 角色：${role}`;
+}
+
+// 登出功能：清除 localStorage 並導向登入頁面
+function logout() {
+    localStorage.clear();
+    window.location.href = "indel.html";
+}
+
+// 頁面載入時更新使用者資訊
+updateUserInfo();
+
+
 // 🚀 登入功能（保持不變）
 // async function login() {
 //     let account = document.getElementById("account").value.trim();
