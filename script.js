@@ -447,6 +447,7 @@ let reviewDataGlobal = null;
 /*------------------------------------------
   1. 取得待審核資料，並填入下拉選單
 -------------------------------------------*/
+// 全域變數用來存放待審核資料（API 回傳的陣列）
 let reviewDataGlobal = [];
 
 // 載入待審核資料
@@ -517,6 +518,7 @@ function displayReviewDetails(taskName) {
     const taskRows = reviewDataGlobal.slice(1).filter(row => row[0] === taskName);
     if (taskRows.length === 0) return;
 
+    // 定義表格欄位
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
@@ -530,6 +532,7 @@ function displayReviewDetails(taskName) {
     table.style.borderCollapse = "collapse";
     table.style.tableLayout = "fixed";
 
+    // 建立父行標題列
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -540,6 +543,7 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
+    // 建立父行資料列
     let parentRow = document.createElement("tr");
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
@@ -554,12 +558,14 @@ function displayReviewDetails(taskName) {
     parentRow.appendChild(expandTd);
 
     let parentValues = [
-        taskRows[0][0], taskRows[0][10], taskRows[0][11],
-        taskRows[0][9], taskRows[0][21],
-        createThumbnail(taskRows[0][8]),
+        taskRows[0][0], // 任務名稱
+        taskRows[0][10], // 到點感應時間
+        taskRows[0][11], // 上傳時間
+        taskRows[0][9],  // 負責人
+        taskRows[0][21], // 部門
+        createThumbnail(taskRows[0][8]), // 照片連結 (縮圖)
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
-
     parentValues.forEach(value => {
         let td = document.createElement("td");
         td.innerHTML = value;
@@ -569,6 +575,7 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
+    // 建立子行區段
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
     childSection.style.display = "none";
@@ -596,7 +603,7 @@ function displayReviewDetails(taskName) {
         childExpandTd.appendChild(childExpandButton);
         childRow.appendChild(childExpandTd);
 
-        [1,2,3,4,5,6,7].forEach(i => {
+        [1, 2, 3, 4, 5, 6, 7].forEach(i => {
             let td = document.createElement("td");
             td.innerText = row[i] || "";
             td.style.border = "1px solid #ddd";
@@ -609,18 +616,21 @@ function displayReviewDetails(taskName) {
     table.appendChild(childSection);
     container.appendChild(table);
 
-    // 自動設定隱藏欄位（重要調整）
-    document.getElementById("responsible").value = taskRows[0][9];
-    document.getElementById("project").value = taskRows[0][2];
-    document.getElementById("uploadTime").value = taskRows[0][11];
-    document.getElementById("account").value = account;
+    // 自動設定隱藏欄位
+    document.getElementById("responsible").value = taskRows[0][9];  // 負責人 (J欄)
+    document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
+    document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
+    // 將登入帳號從 localStorage 帶入（避免使用未定義的 account 變數）
+    document.getElementById("account").value = localStorage.getItem("account") || "";
 }
 
 async function submitReview(decision) {
+    // 取得各必要欄位值
     const fields = ["reviewList", "comment", "account", "responsible", "project", "uploadTime"];
-    const [taskName, comment, account, responsible, project, uploadTime] = fields.map(id => document.getElementById(id).value.trim());
+    const values = fields.map(id => document.getElementById(id).value.trim());
+    const [taskName, comment, account, responsible, project, uploadTime] = values;
 
-    if (!fields.every(f => document.getElementById(f).value.trim())) {
+    if (values.some(val => !val)) {
         alert("請填寫所有必要資訊！");
         return;
     }
@@ -632,7 +642,16 @@ async function submitReview(decision) {
         const res = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskName, decision, comment, role: localStorage.getItem("role"), account, responsible, project, uploadTime }),
+            body: JSON.stringify({
+                taskName, 
+                decision, 
+                comment, 
+                role: localStorage.getItem("role"), 
+                account, 
+                responsible, 
+                project, 
+                uploadTime
+            }),
         });
         const data = await res.json();
         alert(data.success ? `成功：${data.newStatus}` : `失敗：${data.message}`);
@@ -645,4 +664,23 @@ async function submitReview(decision) {
     }
 }
 
-// window.addEventListener("DOMContentLoaded", loadReviewData);
+window.addEventListener("DOMContentLoaded", () => {
+    loadReviewData();
+});
+  
+// --------------------
+// 輔助函式：轉換 Google Drive 連結為可預覽連結
+function convertGoogleDriveLink(link) {
+    if (!link) return "";
+    let match = link.match(/[-\w]{25,}/);
+    return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
+}
+  
+// 輔助函式：建立縮圖 HTML（以 img 元素）
+function createThumbnail(link) {
+    if (!link || link.trim() === "" || link.trim() === "未提供照片") {
+        return "";
+    }
+    const convertedLink = convertGoogleDriveLink(link);
+    return `<img src="${convertedLink}" alt="照片" width="50" style="margin:2px;cursor:pointer;" onclick="window.open('${link.trim()}', '_blank')">`;
+}
