@@ -542,12 +542,12 @@ function displayReviewDetails(taskName) {
     if (taskRows.length === 0) return;
 
     // 定義各層級欄位（依照欄位索引）
-    // 父行：展開按鈕、任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、資料夾位置(22)
-    const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "資料夾位置"];
-    // 子行：展開按鈕、點位或項次(1)、項目(2)、單位(3)、儲備量(4)、盤點量(5)、狀態(6)、備註(7)、照片連結(8)
-    const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
-    // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、確認時間(19)、處理紀錄(20)
-    const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "確認時間", "處理紀錄"];
+    // 父行：展開按鈕、任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、照片連結(8)、資料夾位置(22)
+    const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
+    // 子行：展開按鈕、點位或項次(1)、項目(2)、單位(3)、儲備量(4)、盤點量(5)、狀態(6)、備註(7)
+    const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
+    // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
+    const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
 
     // 取得顯示詳細資料的容器
     const container = document.getElementById("reviewDetails");
@@ -590,15 +590,18 @@ function displayReviewDetails(taskName) {
     expandTd.appendChild(parentExpandButton);
     parentRow.appendChild(expandTd);
 
-    // 其他父行欄位資料：依序填入任務名稱、到點感應時間、上傳時間、負責人、部門、資料夾位置
+    // 其他父行欄位資料：依序填入
+    // 任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、照片連結(8)（縮圖）、資料夾位置(22)（超連結）
     let parentValues = [
-        taskRows[0][0],    // 任務名稱
-        taskRows[0][10],   // 到點感應時間
-        taskRows[0][11],   // 上傳時間
-        taskRows[0][9],    // 負責人
-        taskRows[0][21],   // 部門
+        taskRows[0][0],         // 任務名稱
+        taskRows[0][10],        // 到點感應時間
+        taskRows[0][11],        // 上傳時間
+        taskRows[0][9],         // 負責人
+        taskRows[0][21],        // 部門
+        createThumbnail(taskRows[0][8]), // 照片連結 (縮圖)
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
+    // 注意：由於父行有 8 欄（包含展開按鈕），這裡應該依照順序插入資料到後 7 個欄位
     parentValues.forEach(value => {
         let td = document.createElement("td");
         td.innerHTML = value;
@@ -655,13 +658,7 @@ function displayReviewDetails(taskName) {
             td.style.padding = "8px";
             childRow.appendChild(td);
         });
-        // 照片連結 (索引8) 顯示縮圖
-        let photoTd = document.createElement("td");
-        photoTd.innerHTML = createThumbnail(row[8]);
-        photoTd.style.border = "1px solid #ddd";
-        photoTd.style.padding = "8px";
-        childRow.appendChild(photoTd);
-
+        // （注意：原先的照片連結已移至父行，不再在子行顯示）
         childSection.appendChild(childRow);
 
         // --- 子行的子行區段 ---
@@ -680,14 +677,14 @@ function displayReviewDetails(taskName) {
         });
         subchildSection.appendChild(subchildHeaderRow);
 
-        // 子行的子行資料：依序填入複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、確認時間(19)、處理紀錄(20)
+        // 子行的子行資料：依序填入複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
         let subchildRow = document.createElement("tr");
-        // 展開按鈕欄位，這邊可以留空
+        // 展開按鈕欄位，這邊可留空
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
         subchildRow.appendChild(emptyTd);
 
-        let subchildIndices = [14, 12, 13, 15, 19, 20];
+        let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
         subchildIndices.forEach(i => {
             let td = document.createElement("td");
             if (i === 14) {
@@ -708,6 +705,7 @@ function displayReviewDetails(taskName) {
     container.innerHTML = "";
     container.appendChild(table);
 }
+
 
 
 // 🚀 4. 主管審核 - 提交
