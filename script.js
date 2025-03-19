@@ -441,8 +441,6 @@ function convertGoogleDriveLink(link) {
 //     }
 // }
 
-// 全域變數用來存放待審核資料（API回傳的陣列）
-let reviewDataGlobal = null;
 
 /*------------------------------------------
   1. 取得待審核資料，並填入下拉選單
