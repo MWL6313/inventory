@@ -1,41 +1,47 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>主管審核</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
+  <meta charset="UTF-8">
+  <title>主管審核</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
 </head>
 <body>
-    <script>
-        // 檢查是否有登入資訊：token、department、role 都必須存在
-        if (!localStorage.getItem("token") || !localStorage.getItem("department") || !localStorage.getItem("role")) {
-            alert("請先登入！");
-            window.location.href = "index.html";
-        }
-    </script>
+  <script>
+    // 檢查是否有登入資訊：token、department、role 都必須存在
+    if (!localStorage.getItem("token") || !localStorage.getItem("department") || !localStorage.getItem("role")) {
+      alert("請先登入！");
+      window.location.href = "index.html";
+    }
+  </script>
 
-    <!-- 右上角使用者資訊 -->
-    <div id="userInfo">
-        <span id="userDetails"></span>
-        <div id="idleCountdown"></div>
-        <button onclick="logout()">登出</button>
-    </div>
+  <!-- 右上角使用者資訊 -->
+  <div id="userInfo">
+    <span id="userDetails"></span>
+    <div id="idleCountdown"></div>
+    <button onclick="logout()">登出</button>
+  </div>
 
+  <nav>
+    <a href="history.html">歷史資料</a> |
+    <a href="review.html">主管審核</a>
+  </nav>
+
+  <div class="container">
+    <h2>主管審核</h2>
+    <!-- 此處顯示待審核項目（父行/子行模式） -->
+    <div id="reviewTable"></div>
     
-    <nav>
-        <a href="history.html">歷史資料</a> |
-        <a href="review.html">主管審核</a>
-    </nav>
-    <div class="container">
-        <h2>主管審核</h2>
-        <select id="reviewList"></select>
-        <input type="text" id="comment" placeholder="輸入主管意見">
-        <button onclick="submitReview('approve')">批准</button>
-        <button onclick="submitReview('reject')">退回</button>
-    </div>
+    <!-- 審核意見及操作 -->
+    <input type="text" id="comment" placeholder="輸入主管意見">
+    <button onclick="submitReview('approve')">批准</button>
+    <button onclick="submitReview('reject')">退回</button>
+  </div>
 
-    <script src="script.js"></script>
-    <script>loadReviewData();</script>
+  <script src="script.js"></script>
+  <script>
+    // 頁面載入後呼叫 loadReviewData() 來渲染待審核資料
+    loadReviewData();
+  </script>
 </body>
 </html>
