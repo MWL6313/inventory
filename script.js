@@ -531,15 +531,11 @@ function createThumbnail(link) {
     if (!link || link.trim() === "" || link.trim() === "未提供照片") {
         return "";
     }
-    const img = document.createElement("img");
-    img.src = convertGoogleDriveLink(link);
-    img.alt = "照片";
-    img.width = 50;
-    img.style.margin = "2px";
-    img.style.cursor = "pointer";
-    img.onclick = () => window.open(link.trim(), "_blank");
-    return img.outerHTML; // 回傳 HTML 字串
+    const convertedLink = convertGoogleDriveLink(link);
+    // 回傳帶有 inline onclick 的 HTML 字串
+    return `<img src="${convertedLink}" alt="照片" width="50" style="margin:2px;cursor:pointer;" onclick="window.open('${link.trim()}', '_blank')">`;
 }
+
 
 /*------------------------------------------
   4. 顯示選擇任務的詳細資料（父行、子行、子行的子行）
