@@ -7,6 +7,13 @@
     <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
 </head>
 <body>
+    <script>
+        // 檢查是否有登入資訊：token、department、role 都必須存在
+        if (!localStorage.getItem("token") || !localStorage.getItem("department") || !localStorage.getItem("role")) {
+            alert("請先登入！");
+            window.location.href = "indel.html";
+        }
+    </script>
     <nav>
         <a href="history.html">歷史資料</a> |
         <a href="review.html">主管審核</a>
