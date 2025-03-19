@@ -391,6 +391,7 @@ function convertGoogleDriveLink(link) {
 
 
 // 🚀 3. 主管審核 - 取得資料
+// 🚀 3. 主管審核 - 取得資料
 async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
@@ -407,7 +408,7 @@ async function loadReviewData() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")  // 需包含 Token
+                "Authorization": localStorage.getItem("token")
             },
             body: JSON.stringify({ role, department }),
         });
@@ -424,12 +425,19 @@ async function loadReviewData() {
         if (!select) return;
 
         select.innerHTML = "";
-        data.forEach(row => {
+        if(data.length === 0){
             let option = document.createElement("option");
-            option.value = row[0];
-            option.innerText = row[0];
+            option.value = "";
+            option.innerText = "目前沒有待審核的資料";
             select.appendChild(option);
-        });
+        } else {
+            data.forEach(row => {
+                let option = document.createElement("option");
+                option.value = row[0];
+                option.innerText = row[0];
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
     }
