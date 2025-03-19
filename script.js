@@ -130,7 +130,9 @@ function updateUserInfo() {
     const account = localStorage.getItem("account") || "未知帳號";
     const department = localStorage.getItem("department") || "未知部門";
     const role = localStorage.getItem("role") || "未知角色";
-    document.getElementById("userDetails").innerText = `帳號：${account} | 部門：${department} | 角色：${role}`;
+    // document.getElementById("userDetails").innerText = `帳號：${account} | 部門：${department} | 角色：${role}`;
+    document.getElementById("userDetails").innerHTML = `帳號：${account} <br> 部門：${department} <br> 角色：${role}`;
+
 }
 
 // 登出功能：清除 localStorage 並導向登入頁面
