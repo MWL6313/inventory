@@ -554,7 +554,7 @@ function displayReviewDetails(taskName) {
     // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
     // 設定子行的子行各欄位寬度（包含第一欄展開按鈕），請依需求調整
-    const subchildWidths = ["5%", "15%", "15%", "15%", "15%", "20%", "10%", "10%"];
+    const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
 
     // 取得顯示詳細資料的容器
     const container = document.getElementById("reviewDetails");
