@@ -36,6 +36,44 @@ async function login() {
     }
 }
 
+// 取得 API 基本 URL
+const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
+
+// 🚀 登入功能
+async function login() {
+    let account = document.getElementById("account").value.trim();
+    let password = document.getElementById("password").value.trim();
+
+    console.log("🔹[DEBUG] 嘗試登入", { account, password });
+
+    if (!account || !password) {
+        document.getElementById("message").innerText = "請輸入帳號與密碼";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ account, password }),
+        });
+
+        const data = await response.json();
+        console.log("🟢[DEBUG] 登入 API 回應", data);
+
+        if (data.success) {
+            localStorage.setItem("department", data.department);
+            localStorage.setItem("role", data.role);
+            window.location.href = "dashboard.html";
+        } else {
+            document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
+        }
+    } catch (error) {
+        console.error("🔴[ERROR] 登入請求錯誤：", error);
+        document.getElementById("message").innerText = "系統錯誤，請稍後再試";
+    }
+}
+
 // 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
@@ -61,34 +99,36 @@ async function loadHistory() {
 
         let tableHeader = document.getElementById("tableHeader");
         let tableBody = document.getElementById("historyTable");
-
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, groupingKey, photoIndexes, personIndex;
-
-        // 根據不同類型調整欄位（原始資料）
+        let headers, groupingKey, photoIndexes, personIndex, extraFields = null;
+        // 設定各類型資料對應欄位（原始資料中第一欄為任務名稱，後續欄位依序為…）
         if (type === "盤點") {
-            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=單位, row[4]=儲備數, row[5]=盤點數, row[6]=狀態, row[7]=備註, row[8]=照片連結, row[9]=負責人, row[10]=到點感應時間, row[11]=上傳時間, row[12]=部門
+            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備數, 5=盤點數, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=部門
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
-            groupingKey = [0, 11]; // 用 row[0]（任務名稱）與 row[11]（上傳時間）分組
-            // 在詳細資料中，我們要從 row[1] 開始，故照片欄位對應：原始 row[8] → detail index = 8 - 1 = 7
-            photoIndexes = [7];
-            personIndex = 9; // 負責人保持 row[9]，因為在主行我們直接從第一組資料取
+            groupingKey = [0, 11];
+            photoIndexes = [8]; // 原始 row[8]
+            personIndex = 9;    // 負責人: row[9]
         } else if (type === "巡檢") {
-            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=狀態, row[4]=備註, row[5]=照片連結, row[6]=負責人, row[7]=到點感應時間, row[8]=上傳時間, row[9]=部門
+            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=狀態, 4=備註, 5=照片連結, 6=負責人, 7=到點感應時間, 8=上傳時間, 9=部門
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
             groupingKey = [0, 8];
-            // 原始 row[5] → detail index = 5 - 1 = 4
-            photoIndexes = [4];
-            personIndex = 6; // 負責人: row[6]
+            photoIndexes = [5]; // 原始 row[5]
+            personIndex = 6;    // 負責人: row[6]
         } else if (type === "異常處理") {
-            // 原始資料：row[0]=任務名稱, row[1]=點位或項次, row[2]=項目, row[3]=單位, row[4]=儲備量, row[5]=盤點量, row[6]=狀態, row[7]=備註, row[8]=照片連結, row[9]=負責人, row[10]=到點感應時間, row[11]=上傳時間, row[12]=處理狀態, row[13]=複查情形, row[14]=複查照片連結, row[15]=複查時間, row[16]=主管, row[17]=批准或退回, row[18]=主管意見, row[19]=確認時間, row[20]=處理紀錄, row[21]=部門
-            headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結", "複查照片連結"];
+            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
+            // 主顯示部分只顯示從點位或項次到照片連結（不包含複查等），即 columns 1~8 (共8欄)
+            headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
+            // 額外欄位放在子行的子行
+            extraFields = {
+                extraHeaders: ["複查照片連結", "複查時間", "主管意見", "確認時間", "處理紀錄"],
+                // 對應原始資料：複查照片連結: row[14], 複查時間: row[15], 主管意見: row[18], 確認時間: row[19], 處理紀錄: row[20]
+                extraIndexes: [14, 15, 18, 19, 20]
+            };
             groupingKey = [0, 11];
-            // 原始 row[8] → detail index = 8 - 1 = 7; 原始 row[14] → detail index = 14 - 1 = 13
-            photoIndexes = [7, 13];
-            personIndex = 9; // 負責人: row[9]
+            photoIndexes = [8]; // 主照片欄位為 row[8]
+            personIndex = 9;    // 負責人: row[9]
         }
 
         // 📌 **分組處理**
@@ -110,7 +150,8 @@ async function loadHistory() {
 
         // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
-            let firstRow = groupedData[groupKey][0]; // 分組代表
+            let groupRows = groupedData[groupKey];
+            let firstRow = groupRows[0]; // 分組代表
             let tr = document.createElement("tr");
 
             // 🔹 **主展開按鈕**
@@ -127,8 +168,7 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 顯示組合欄位（群組資料已由 row[0] 作為分組，故從 row[0] 取得群組關鍵資訊）
-            // 此處 groupKey 為 "任務名稱 | 上傳時間"
+            // 主表顯示群組關鍵資料：任務名稱與上傳時間取自群組 key，負責人取第一筆記錄
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
             [groupTaskName, groupUploadTime, firstRow[personIndex]].forEach(value => {
                 let td = document.createElement("td");
@@ -148,9 +188,8 @@ async function loadHistory() {
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 🔹 **建立詳細表頭**
+            // 🔹 **建立詳細表頭列**
             let detailHeaderRow = document.createElement("tr");
-            // 詳細表頭只顯示 headers，不再重複任務名稱
             headers.forEach(h => {
                 let th = document.createElement("th");
                 th.innerText = h;
@@ -159,18 +198,16 @@ async function loadHistory() {
             detailTable.appendChild(detailHeaderRow);
 
             // 🔹 **填充每筆詳細資料**
-            groupedData[groupKey].forEach((row, rowIndex) => {
+            groupRows.forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
                 subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
 
-                // 不再放子展開按鈕，避免重複隱藏同一行
-                // 若未來需要額外細節，可另外建立一個子行
-                // 現在直接填充資料
+                // 直接填充主要數據：從 row[1] 開始對應 headers[0]
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    // 詳細資料從 row[1] 開始對應 headers[0]
                     let cellData = row[colIndex + 1] || "";
-                    if (photoIndexes.includes(colIndex)) {
+                    // 如果是照片欄位
+                    if (photoIndexes.includes(colIndex + 1)) {
                         let imgContainer = document.createElement("div");
                         let imgLinks = cellData.split(",").filter(link => link.trim() !== "");
                         imgLinks.forEach(link => {
@@ -178,7 +215,7 @@ async function loadHistory() {
                             let imgUrl = convertGoogleDriveLink(link.trim());
                             img.src = imgUrl;
                             img.alt = "照片";
-                            img.style.width = "50px";
+                            img.width = 50;
                             img.style.margin = "2px";
                             img.style.cursor = "pointer";
                             img.onclick = () => window.open(link.trim(), "_blank");
@@ -191,6 +228,38 @@ async function loadHistory() {
                     subTr.appendChild(td);
                 });
                 detailTable.appendChild(subTr);
+
+                // 如果類型為異常處理，加入子行的子行顯示額外欄位
+                if (type === "異常處理" && extraFields) {
+                    let extraTr = document.createElement("tr");
+                    extraTr.id = `sub-extra-${groupIndex}-${rowIndex}`;
+                    extraTr.style.display = "none";
+                    let extraTd = document.createElement("td");
+                    extraTd.colSpan = headers.length; // 跨全部欄位
+                    // 取得額外欄位資料
+                    let extraData = extraFields.extraHeaders.map((header, idx) => {
+                        // 對應原始資料 extraIndexes[idx]
+                        return `${header}: ${row[extraFields.extraIndexes[idx]] || ""}`;
+                    }).join(" | ");
+                    extraTd.innerText = extraData;
+                    extraTr.appendChild(extraTd);
+                    detailTable.appendChild(extraTr);
+
+                    // 同時在 subTr 裡增加一個按鈕，用以展開額外資訊
+                    let extraToggleTd = document.createElement("td");
+                    let extraToggleButton = document.createElement("button");
+                    extraToggleButton.innerText = "＋";
+                    extraToggleButton.classList.add("expand-btn");
+                    extraToggleButton.onclick = function () {
+                        let extraRow = document.getElementById(`sub-extra-${groupIndex}-${rowIndex}`);
+                        let isHidden = extraRow.style.display === "none";
+                        extraRow.style.display = isHidden ? "table-row" : "none";
+                        extraToggleButton.innerText = isHidden ? "－" : "＋";
+                    };
+                    // 將按鈕添加到 subTr 的第一個位置（或你希望的位置）
+                    subTr.insertBefore(extraToggleTd, subTr.firstChild);
+                    extraToggleTd.appendChild(extraToggleButton);
+                }
             });
 
             detailTd.appendChild(detailTable);
@@ -202,7 +271,7 @@ async function loadHistory() {
     }
 }
 
-// 🚀 **將 Google Drive 連結轉為可預覽**
+// 🚀 將 Google Drive 連結轉為可預覽
 function convertGoogleDriveLink(link) {
     if (!link) return "";
     let match = link.match(/[-\w]{25,}/);
