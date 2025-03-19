@@ -742,35 +742,55 @@ function displayReviewDetails(taskName) {
     container.appendChild(table);
 }
 
+// 新增一個函式，用來動態插入必要的輸入欄位
+function insertReviewInputs() {
+    // 如果尚未插入，則建立一個包含輸入欄位的區塊
+    if (!document.getElementById("reviewInputs")) {
+        const reviewInputsDiv = document.createElement("div");
+        reviewInputsDiv.id = "reviewInputs";
+        // 這裡我們設定四個欄位：
+        // account：目前登入帳號 (將存放在 Q 欄)
+        // responsible：任務負責人 (用於篩選，存放在 J 欄)
+        // project：項目
+        // uploadTime：上傳時間
+        reviewInputsDiv.innerHTML = `
+            <input type="text" id="account" placeholder="登入帳號">
+            <input type="text" id="responsible" placeholder="負責人">
+            <input type="text" id="project" placeholder="項目">
+            <input type="text" id="uploadTime" placeholder="上傳時間">
+        `;
+        // 將此區塊插入到主要容器中，例：放在 reviewDetails 下方或 container 內皆可
+        const container = document.querySelector(".container");
+        container.appendChild(reviewInputsDiv);
+    }
+}
 
 
 
 
 // 🚀 4. 主管審核 - 提交
-// 🚀 4. 主管審核 - 提交
+// 原有的 submitReview 函式，會取得上述動態插入的輸入欄位值
 async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
     let role = localStorage.getItem("role");
-    // 取得目前登入的帳號 (account) 與負責人 (responsible)
+    // 取得動態插入的欄位值
     let account = document.getElementById("account").value.trim();
     let responsible = document.getElementById("responsible").value.trim();
     let project = document.getElementById("project").value.trim();
     let uploadTime = document.getElementById("uploadTime").value.trim();
 
-    // 假設網頁上有一個提交按鈕與 loading spinner 元素
+    // 假設有提交按鈕與 loading spinner
     let submitBtn = document.getElementById("submitBtn");
     let spinner = document.getElementById("spinner");
 
     console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, account, responsible, project, uploadTime });
 
-    // 檢查 taskName、comment、account、responsible、project 與 uploadTime 是否為空
     if (!taskName || !comment || !account || !responsible || !project || !uploadTime) {
         alert("請選擇任務並輸入所有必要的審核資料");
         return;
     }
 
-    // 在提交期間禁用提交按鈕並顯示 loading spinner
     submitBtn.disabled = true;
     spinner.style.display = 'block';
 
@@ -778,7 +798,7 @@ async function submitReview(decision) {
         const response = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // 將 responsible 一併傳給後端，用於篩選任務（J欄），account 為登入帳號（Q欄）
+            // 傳送 account (登入帳號) 與 responsible (任務負責人) 等資料
             body: JSON.stringify({ taskName, decision, comment, role, account, responsible, project, uploadTime }),
         });
 
@@ -795,10 +815,14 @@ async function submitReview(decision) {
         console.error("🔴[ERROR] 審核提交錯誤：", error);
         alert("系統錯誤，請稍後再試");
     } finally {
-        // 無論成功或失敗，都需恢復提交按鈕與隱藏 loading spinner
         submitBtn.disabled = false;
         spinner.style.display = 'none';
     }
 }
 
+// 假設頁面載入時先呼叫 loadReviewData 與插入輸入欄位
+window.addEventListener("DOMContentLoaded", () => {
+    loadReviewData();
+    insertReviewInputs();
+});
 
