@@ -11,7 +11,7 @@ function updateUserInfo() {
 // 登出功能：清除 localStorage 並導向登入頁面
 function logout() {
     localStorage.clear();
-    window.location.href = "indel.html";
+    window.location.href = "index.html";
 }
 
 // 頁面載入時更新使用者資訊
