@@ -498,10 +498,17 @@ async function loadReviewData() {
                 select.appendChild(option);
             });
         }
-        // 如果下拉選單只有一個有效選項，則自動顯示詳細資料
-        if (select.options.length === 1 && select.options[0].value !== "") {
-          displayReviewDetails(select.options[0].value);
+        // 當下拉選單的選項不為空時，自動載入當前選擇項目的詳細資料
+        if (select.value !== "") {
+            displayReviewDetails(select.value);
         }
+        
+        // 當選擇改變時，也自動載入詳細資料
+        select.addEventListener("change", function() {
+            if (this.value !== "") {
+                displayReviewDetails(this.value);
+            }
+        });
 
     } catch (error) {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
