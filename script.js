@@ -530,7 +530,6 @@ function displayReviewDetails(taskName) {
     table.style.borderCollapse = "collapse";
     table.style.tableLayout = "fixed";
 
-    // 建立父行標題列
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -541,7 +540,6 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
-    // 建立父行資料列
     let parentRow = document.createElement("tr");
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
@@ -556,12 +554,12 @@ function displayReviewDetails(taskName) {
     parentRow.appendChild(expandTd);
 
     let parentValues = [
-        taskRows[0][0], // 任務名稱
-        taskRows[0][10], // 到點感應時間
-        taskRows[0][11], // 上傳時間
-        taskRows[0][9],  // 負責人
-        taskRows[0][21], // 部門
-        createThumbnail(taskRows[0][8]), // 照片連結 (縮圖)
+        taskRows[0][0],
+        taskRows[0][10],
+        taskRows[0][11],
+        taskRows[0][9],
+        taskRows[0][21],
+        createThumbnail(taskRows[0][8]),
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
     parentValues.forEach(value => {
@@ -573,7 +571,6 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
-    // 建立子行區段
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
     childSection.style.display = "none";
@@ -601,7 +598,7 @@ function displayReviewDetails(taskName) {
         childExpandTd.appendChild(childExpandButton);
         childRow.appendChild(childExpandTd);
 
-        [1, 2, 3, 4, 5, 6, 7].forEach(i => {
+        [1,2,3,4,5,6,7].forEach(i => {
             let td = document.createElement("td");
             td.innerText = row[i] || "";
             td.style.border = "1px solid #ddd";
@@ -618,12 +615,10 @@ function displayReviewDetails(taskName) {
     document.getElementById("responsible").value = taskRows[0][9];  // 負責人 (J欄)
     document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
     document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
-    // 將登入帳號從 localStorage 帶入（避免使用未定義的 account 變數）
     document.getElementById("account").value = localStorage.getItem("account") || "";
 }
 
 async function submitReview(decision) {
-    // 取得各必要欄位值
     const fields = ["reviewList", "comment", "account", "responsible", "project", "uploadTime"];
     const values = fields.map(id => document.getElementById(id).value.trim());
     const [taskName, comment, account, responsible, project, uploadTime] = values;
@@ -662,10 +657,13 @@ async function submitReview(decision) {
     }
 }
 
+// 綁定 DOMContentLoaded 事件，確保所有元素載入後綁定按鈕事件
 window.addEventListener("DOMContentLoaded", () => {
     loadReviewData();
+    document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
+    document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
 });
-  
+
 // --------------------
 // 輔助函式：轉換 Google Drive 連結為可預覽連結
 function convertGoogleDriveLink(link) {
@@ -673,7 +671,7 @@ function convertGoogleDriveLink(link) {
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
-  
+
 // 輔助函式：建立縮圖 HTML（以 img 元素）
 function createThumbnail(link) {
     if (!link || link.trim() === "" || link.trim() === "未提供照片") {
