@@ -1,5 +1,5 @@
 // 取得 API 基本 URL
-const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";
+const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
 
 // 🚀 登入功能
 async function login() {
@@ -37,7 +37,6 @@ async function login() {
 }
 
 // 🚀 讀取歷史資料並分組顯示
-// 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
     if (!typeSelect) return;
@@ -65,27 +64,33 @@ async function loadHistory() {
         tableHeader.innerHTML = "";
         tableBody.innerHTML = "";
 
-        let headers, groupingKey, photoIndexes, personIndex, extraFields = null;
+        let headers, groupingKey, photoIndexes, personIndex, deptIndex;
+        let isAbnormal = false;
+        let extraFields = null; // 僅針對異常處理
+
         // 設定各類型資料對應欄位（原始資料中第一欄為任務名稱）
         if (type === "盤點") {
             // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備數, 5=盤點數, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=部門
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11];
-            photoIndexes = [8]; // 照片連結位於 row[8]
+            photoIndexes = [8]; // row[8]
             personIndex = 9;
+            deptIndex = 12;
         } else if (type === "巡檢") {
             // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=狀態, 4=備註, 5=照片連結, 6=負責人, 7=到點感應時間, 8=上傳時間, 9=部門
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
             groupingKey = [0, 8];
             photoIndexes = [5]; // row[5]
             personIndex = 6;
+            deptIndex = 9;
         } else if (type === "異常處理") {
             // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
-            // 主顯示部分只顯示從點位或項次到照片連結，即 columns 1~8
+            // 主顯示部分只顯示從點位或項次到照片連結 (即 row[1]~row[8])
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11];
-            photoIndexes = [8]; // 主照片連結: row[8]
+            photoIndexes = [8]; // 主照片連結：row[8]
             personIndex = 9;
+            deptIndex = 21;
             isAbnormal = true;
             extraFields = {
                 extraHeaders: ["複查照片連結", "複查時間", "主管意見", "確認時間", "處理紀錄"],
@@ -104,7 +109,8 @@ async function loadHistory() {
 
         // 📌 **建立主表頭**
         let mainHeaderRow = document.createElement("tr");
-        ["", "任務名稱", "上傳時間", "負責人"].forEach(header => {
+        // 現在顯示 5 欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門
+        ["", "任務名稱", "上傳時間", "負責人", "部門"].forEach(header => {
             let th = document.createElement("th");
             th.innerText = header;
             mainHeaderRow.appendChild(th);
@@ -114,7 +120,7 @@ async function loadHistory() {
         // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
             let groupRows = groupedData[groupKey];
-            let firstRow = groupRows[0]; // 群組代表
+            let firstRow = groupRows[0]; // 分組代表
             let tr = document.createElement("tr");
 
             // 主展開按鈕
@@ -131,9 +137,9 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 群組資料：任務名稱與上傳時間從 groupKey 取得，負責人從第一筆資料取
+            // 從群組 key 取得任務名稱與上傳時間，並從第一筆記錄取負責人和部門
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
-            [groupTaskName, groupUploadTime, firstRow[personIndex]].forEach(value => {
+            [groupTaskName, groupUploadTime, firstRow[personIndex], firstRow[deptIndex]].forEach(value => {
                 let td = document.createElement("td");
                 td.innerText = value;
                 tr.appendChild(td);
@@ -145,13 +151,15 @@ async function loadHistory() {
             detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
             let detailTd = document.createElement("td");
-            detailTd.colSpan = 4;
+            // 主表現在有5欄，故詳細表格跨5欄
+            detailTd.colSpan = 5;
 
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 詳細表頭（增加一欄空白對應展開按鈕）
+            // 詳細表頭 (不重複顯示任務名稱)
             let detailHeaderRow = document.createElement("tr");
+            // 加入一個空白表頭對應主展開按鈕
             let emptyTh = document.createElement("th");
             emptyTh.innerText = "";
             detailHeaderRow.appendChild(emptyTh);
@@ -160,16 +168,15 @@ async function loadHistory() {
                 th.innerText = h;
                 detailHeaderRow.appendChild(th);
             });
-            // 若異常處理，額外欄位不在這裡顯示
             detailTable.appendChild(detailHeaderRow);
 
-            // 填充每筆詳細資料（子行）
+            // 填充每筆詳細資料 (子行)
             groupRows.forEach((row, rowIndex) => {
                 let subTr = document.createElement("tr");
                 subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
-                
-                // 為異常處理增加額外展開按鈕，讓額外資訊顯示在一個獨立的子行
-                if (type === "異常處理" && extraFields) {
+
+                // 若為異常處理，於第一欄加入額外展開按鈕，否則空白
+                if (isAbnormal && extraFields) {
                     let extraToggleTd = document.createElement("td");
                     let extraToggleButton = document.createElement("button");
                     extraToggleButton.innerText = "＋";
@@ -184,15 +191,15 @@ async function loadHistory() {
                     extraToggleTd.appendChild(extraToggleButton);
                     subTr.appendChild(extraToggleTd);
                 } else {
-                    // 非異常處理則第一欄空白以對齊
                     let emptyTd = document.createElement("td");
                     emptyTd.innerText = "";
                     subTr.appendChild(emptyTd);
                 }
-                
-                // 填充詳細資料：從 row[1] 開始對應 headers
+
+                // 填充詳細資料從 row[1] 開始對應 headers
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
+                    // 注意：使用 row[colIndex+1]，避免重複任務名稱
                     let cellData = row[colIndex + 1] || "";
                     if (photoIndexes.includes(colIndex + 1)) {
                         let imgContainer = document.createElement("div");
@@ -216,14 +223,14 @@ async function loadHistory() {
                 });
                 detailTable.appendChild(subTr);
 
-                // 如果異常處理，加入額外資訊子行，顯示為內部表格形式
-                if (type === "異常處理" && extraFields) {
+                // 如果異常處理，加入子行的子行以表格形式顯示額外欄位
+                if (isAbnormal && extraFields) {
                     let extraTr = document.createElement("tr");
                     extraTr.id = `sub-extra-${groupIndex}-${rowIndex}`;
                     extraTr.style.display = "none";
                     let extraTd = document.createElement("td");
-                    extraTd.colSpan = headers.length + 1;
-                    
+                    extraTd.colSpan = headers.length + 1; // 跨展開按鈕欄及所有詳細欄位
+
                     // 建立內部表格顯示額外資訊
                     let extraTable = document.createElement("table");
                     extraTable.style.width = "100%";
@@ -237,36 +244,17 @@ async function loadHistory() {
                         extraHeaderRow.appendChild(th);
                     });
                     extraTable.appendChild(extraHeaderRow);
-                    
+
                     let extraDataRow = document.createElement("tr");
                     extraFields.extraIndexes.forEach((extraIndex, idx) => {
                         let td = document.createElement("td");
-                        // 如果這是複查照片連結，顯示為圖片
-                        if (extraFields.extraHeaders[idx] === "複查照片連結") {
-                            let extraCell = row[extraIndex] || "";
-                            let imgContainer = document.createElement("div");
-                            let imgLinks = extraCell.split(",").filter(link => link.trim() !== "");
-                            imgLinks.forEach(link => {
-                                let img = document.createElement("img");
-                                let imgUrl = convertGoogleDriveLink(link.trim());
-                                img.src = imgUrl;
-                                img.alt = "複查照片";
-                                img.width = 50;
-                                img.style.margin = "2px";
-                                img.style.cursor = "pointer";
-                                img.onclick = () => window.open(link.trim(), "_blank");
-                                imgContainer.appendChild(img);
-                            });
-                            td.appendChild(imgContainer);
-                        } else {
-                            td.innerText = row[extraIndex] || "";
-                        }
+                        td.innerText = row[extraIndex] || "";
                         td.style.border = "1px solid #ccc";
                         td.style.padding = "5px";
                         extraDataRow.appendChild(td);
                     });
                     extraTable.appendChild(extraDataRow);
-                    
+
                     extraTd.appendChild(extraTable);
                     extraTr.appendChild(extraTd);
                     detailTable.appendChild(extraTr);
@@ -288,6 +276,7 @@ function convertGoogleDriveLink(link) {
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
+
 
 
 // 🚀 3. 主管審核 - 取得資料
