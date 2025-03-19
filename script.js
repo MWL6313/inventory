@@ -84,11 +84,12 @@ async function loadHistory() {
             personIndex = 6;
             deptIndex = 9;
         } else if (type === "異常處理") {
-            // 0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
-            // 主顯示部分只顯示從點位或項次到照片連結（即 row[1]~row[8]）
+            // 0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 
+            // 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
+            // 主顯示部分只顯示從點位或項次到照片連結 (即 row[1]~row[8])
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11];
-            photoIndexes = [8]; // 主照片連結：row[8]
+            photoIndexes = [8]; // 主照片連結在 row[8]
             personIndex = 9;
             deptIndex = 21;
             isAbnormal = true;
@@ -98,7 +99,7 @@ async function loadHistory() {
             };
         }
 
-        // 📌 **分組處理**
+        // 📌 分組處理
         let groupedData = {};
         data.slice(1).forEach(row => {
             let key = row[groupingKey[0]] + " | " + row[groupingKey[1]];
@@ -106,9 +107,8 @@ async function loadHistory() {
             groupedData[key].push(row);
         });
 
-        // 📌 **建立主表頭**
+        // 📌 建立主表頭 (5欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門)
         let mainHeaderRow = document.createElement("tr");
-        // 主表顯示 5 欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門
         ["", "任務名稱", "上傳時間", "負責人", "部門"].forEach(header => {
             let th = document.createElement("th");
             th.innerText = header;
@@ -116,7 +116,7 @@ async function loadHistory() {
         });
         tableHeader.appendChild(mainHeaderRow);
 
-        // 📌 **顯示分組資料**
+        // 📌 顯示分組資料
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
             let groupRows = groupedData[groupKey];
             let firstRow = groupRows[0];
@@ -136,7 +136,7 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 顯示群組關鍵資料：從群組 key 取得任務名稱與上傳時間，負責人和部門從第一筆記錄取
+            // 顯示群組關鍵資料：任務名稱、上傳時間、負責人、部門
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
             [groupTaskName, groupUploadTime, firstRow[personIndex], firstRow[deptIndex]].forEach(value => {
                 let td = document.createElement("td");
@@ -150,13 +150,11 @@ async function loadHistory() {
             detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
             let detailTd = document.createElement("td");
-            // 設定跨欄：應為 headers.length + 1 (多一欄給展開按鈕)
-            detailTd.colSpan = headers.length + 1;
-
+            detailTd.colSpan = headers.length + 1;  // 主表有5欄
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 詳細表頭：先一個空白對應展開按鈕，再顯示 headers
+            // 詳細表頭 (第一欄為空對應展開按鈕)
             let detailHeaderRow = document.createElement("tr");
             let emptyTh = document.createElement("th");
             emptyTh.innerText = "";
@@ -173,7 +171,7 @@ async function loadHistory() {
                 let subTr = document.createElement("tr");
                 subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
 
-                // 如果為異常處理，於第一欄加入額外展開按鈕；否則空白
+                // 若為異常處理，於第一欄加入額外展開按鈕；否則第一欄空白
                 if (isAbnormal && extraFields) {
                     let extraToggleTd = document.createElement("td");
                     let extraToggleButton = document.createElement("button");
@@ -194,25 +192,30 @@ async function loadHistory() {
                     subTr.appendChild(emptyTd);
                 }
 
-                // 填充詳細資料：從 row[1] 開始對應 headers
+                // 填充詳細資料，從 row[1] 開始對應 headers
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
                     let cellData = row[colIndex + 1] || "";
                     if (photoIndexes.includes(colIndex + 1)) {
-                        let imgContainer = document.createElement("div");
-                        let imgLinks = cellData.split(",").filter(link => link.trim() !== "");
-                        imgLinks.forEach(link => {
-                            let img = document.createElement("img");
-                            let imgUrl = convertGoogleDriveLink(link.trim());
-                            img.src = imgUrl;
-                            img.alt = "照片";
-                            img.width = 50;
-                            img.style.margin = "2px";
-                            img.style.cursor = "pointer";
-                            img.onclick = () => window.open(link.trim(), "_blank");
-                            imgContainer.appendChild(img);
-                        });
-                        td.appendChild(imgContainer);
+                        // 判斷如果該欄位為空或顯示"未提供照片"，則留白
+                        if (cellData.trim() === "" || cellData.trim() === "未提供照片") {
+                            td.innerText = "";
+                        } else {
+                            let imgContainer = document.createElement("div");
+                            let imgLinks = cellData.split(",").filter(link => link.trim() !== "" && link.trim() !== "未提供照片");
+                            imgLinks.forEach(link => {
+                                let img = document.createElement("img");
+                                let imgUrl = convertGoogleDriveLink(link.trim());
+                                img.src = imgUrl;
+                                img.alt = "照片";
+                                img.width = 50;
+                                img.style.margin = "2px";
+                                img.style.cursor = "pointer";
+                                img.onclick = () => window.open(link.trim(), "_blank");
+                                imgContainer.appendChild(img);
+                            });
+                            td.appendChild(imgContainer);
+                        }
                     } else {
                         td.innerText = cellData;
                     }
@@ -220,7 +223,7 @@ async function loadHistory() {
                 });
                 detailTable.appendChild(subTr);
 
-                // 如果異常處理，加入子行的子行以表格形式顯示額外欄位
+                // 如果異常處理，加入子行的子行以表格形式顯示額外資訊
                 if (isAbnormal && extraFields) {
                     let extraTr = document.createElement("tr");
                     extraTr.id = `sub-extra-${groupIndex}-${rowIndex}`;
@@ -245,7 +248,30 @@ async function loadHistory() {
                     let extraDataRow = document.createElement("tr");
                     extraFields.extraIndexes.forEach((extraIndex, idx) => {
                         let td = document.createElement("td");
-                        td.innerText = row[extraIndex] || "";
+                        // 如果這個欄位為複查照片連結，也用圖片顯示方式
+                        if (extraFields.extraHeaders[idx] === "複查照片連結") {
+                            let extraCell = row[extraIndex] || "";
+                            if (extraCell.trim() === "" || extraCell.trim() === "未提供照片") {
+                                td.innerText = "";
+                            } else {
+                                let imgContainer = document.createElement("div");
+                                let imgLinks = extraCell.split(",").filter(link => link.trim() !== "" && link.trim() !== "未提供照片");
+                                imgLinks.forEach(link => {
+                                    let img = document.createElement("img");
+                                    let imgUrl = convertGoogleDriveLink(link.trim());
+                                    img.src = imgUrl;
+                                    img.alt = "複查照片";
+                                    img.width = 50;
+                                    img.style.margin = "2px";
+                                    img.style.cursor = "pointer";
+                                    img.onclick = () => window.open(link.trim(), "_blank");
+                                    imgContainer.appendChild(img);
+                                });
+                                td.appendChild(imgContainer);
+                            }
+                        } else {
+                            td.innerText = row[extraIndex] || "";
+                        }
                         td.style.border = "1px solid #ccc";
                         td.style.padding = "5px";
                         extraDataRow.appendChild(td);
@@ -273,6 +299,7 @@ function convertGoogleDriveLink(link) {
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
+
 
 
 
