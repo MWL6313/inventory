@@ -82,7 +82,6 @@ async function login() {
             localStorage.setItem("role", data.role);
             localStorage.setItem("account", data.account); // 儲存登入帳號
             window.location.href = "dashboard.html";
-        }
 
         } else {
             document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
