@@ -1,6 +1,5 @@
 // 取得 API 基本 URL
-const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
-
+const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";
 
 // 🚀 登入功能（調整後，加入儲存 token）
 async function login() {
@@ -29,10 +28,8 @@ async function login() {
             localStorage.setItem("department", data.department);
             localStorage.setItem("role", data.role);
             // 使用 input 框中的帳號來存入 localStorage
-            const account = document.getElementById("account").value.trim();
             localStorage.setItem("account", account);
             window.location.href = "dashboard.html";
-
         } else {
             document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
         }
@@ -41,6 +38,7 @@ async function login() {
         document.getElementById("message").innerText = "系統錯誤，請稍後再試";
     }
 }
+
 
 
 // 設定閒置超時時間：30 分鐘（以毫秒計算）
