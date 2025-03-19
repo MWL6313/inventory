@@ -70,22 +70,22 @@ async function loadHistory() {
 
         // 設定各類型資料對應欄位（原始資料中第一欄為任務名稱）
         if (type === "盤點") {
-            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備數, 5=盤點數, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=部門
+            // 0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備數, 5=盤點數, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=部門
             headers = ["點位或項次", "項目", "單位", "儲備數", "盤點數", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11];
-            photoIndexes = [8]; // row[8]
+            photoIndexes = [8];
             personIndex = 9;
             deptIndex = 12;
         } else if (type === "巡檢") {
-            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=狀態, 4=備註, 5=照片連結, 6=負責人, 7=到點感應時間, 8=上傳時間, 9=部門
+            // 0=任務名稱, 1=點位或項次, 2=項目, 3=狀態, 4=備註, 5=照片連結, 6=負責人, 7=到點感應時間, 8=上傳時間, 9=部門
             headers = ["點位或項次", "項目", "狀態", "備註", "照片連結"];
             groupingKey = [0, 8];
-            photoIndexes = [5]; // row[5]
+            photoIndexes = [5];
             personIndex = 6;
             deptIndex = 9;
         } else if (type === "異常處理") {
-            // 原始資料：0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
-            // 主顯示部分只顯示從點位或項次到照片連結 (即 row[1]~row[8])
+            // 0=任務名稱, 1=點位或項次, 2=項目, 3=單位, 4=儲備量, 5=盤點量, 6=狀態, 7=備註, 8=照片連結, 9=負責人, 10=到點感應時間, 11=上傳時間, 12=處理狀態, 13=複查情形, 14=複查照片連結, 15=複查時間, 16=主管, 17=批准或退回, 18=主管意見, 19=確認時間, 20=處理紀錄, 21=部門
+            // 主顯示部分只顯示從點位或項次到照片連結（即 row[1]~row[8]）
             headers = ["點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註", "照片連結"];
             groupingKey = [0, 11];
             photoIndexes = [8]; // 主照片連結：row[8]
@@ -94,7 +94,6 @@ async function loadHistory() {
             isAbnormal = true;
             extraFields = {
                 extraHeaders: ["複查照片連結", "複查時間", "主管意見", "確認時間", "處理紀錄"],
-                // 對應原始資料：複查照片連結: row[14], 複查時間: row[15], 主管意見: row[18], 確認時間: row[19], 處理紀錄: row[20]
                 extraIndexes: [14, 15, 18, 19, 20]
             };
         }
@@ -109,7 +108,7 @@ async function loadHistory() {
 
         // 📌 **建立主表頭**
         let mainHeaderRow = document.createElement("tr");
-        // 現在顯示 5 欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門
+        // 主表顯示 5 欄：展開按鈕, 任務名稱, 上傳時間, 負責人, 部門
         ["", "任務名稱", "上傳時間", "負責人", "部門"].forEach(header => {
             let th = document.createElement("th");
             th.innerText = header;
@@ -120,7 +119,7 @@ async function loadHistory() {
         // 📌 **顯示分組資料**
         Object.keys(groupedData).forEach((groupKey, groupIndex) => {
             let groupRows = groupedData[groupKey];
-            let firstRow = groupRows[0]; // 分組代表
+            let firstRow = groupRows[0];
             let tr = document.createElement("tr");
 
             // 主展開按鈕
@@ -137,7 +136,7 @@ async function loadHistory() {
             expandTd.appendChild(expandButton);
             tr.appendChild(expandTd);
 
-            // 從群組 key 取得任務名稱與上傳時間，並從第一筆記錄取負責人和部門
+            // 顯示群組關鍵資料：從群組 key 取得任務名稱與上傳時間，負責人和部門從第一筆記錄取
             let [groupTaskName, groupUploadTime] = groupKey.split(" | ");
             [groupTaskName, groupUploadTime, firstRow[personIndex], firstRow[deptIndex]].forEach(value => {
                 let td = document.createElement("td");
@@ -151,15 +150,14 @@ async function loadHistory() {
             detailRow.id = `group-${groupIndex}`;
             detailRow.style.display = "none";
             let detailTd = document.createElement("td");
-            // 主表現在有5欄，故詳細表格跨5欄
-            detailTd.colSpan = 5;
+            // 設定跨欄：應為 headers.length + 1 (多一欄給展開按鈕)
+            detailTd.colSpan = headers.length + 1;
 
             let detailTable = document.createElement("table");
             detailTable.classList.add("detail-table");
 
-            // 詳細表頭 (不重複顯示任務名稱)
+            // 詳細表頭：先一個空白對應展開按鈕，再顯示 headers
             let detailHeaderRow = document.createElement("tr");
-            // 加入一個空白表頭對應主展開按鈕
             let emptyTh = document.createElement("th");
             emptyTh.innerText = "";
             detailHeaderRow.appendChild(emptyTh);
@@ -175,7 +173,7 @@ async function loadHistory() {
                 let subTr = document.createElement("tr");
                 subTr.id = `sub-detail-${groupIndex}-${rowIndex}`;
 
-                // 若為異常處理，於第一欄加入額外展開按鈕，否則空白
+                // 如果為異常處理，於第一欄加入額外展開按鈕；否則空白
                 if (isAbnormal && extraFields) {
                     let extraToggleTd = document.createElement("td");
                     let extraToggleButton = document.createElement("button");
@@ -196,10 +194,9 @@ async function loadHistory() {
                     subTr.appendChild(emptyTd);
                 }
 
-                // 填充詳細資料從 row[1] 開始對應 headers
+                // 填充詳細資料：從 row[1] 開始對應 headers
                 headers.forEach((_, colIndex) => {
                     let td = document.createElement("td");
-                    // 注意：使用 row[colIndex+1]，避免重複任務名稱
                     let cellData = row[colIndex + 1] || "";
                     if (photoIndexes.includes(colIndex + 1)) {
                         let imgContainer = document.createElement("div");
@@ -229,8 +226,8 @@ async function loadHistory() {
                     extraTr.id = `sub-extra-${groupIndex}-${rowIndex}`;
                     extraTr.style.display = "none";
                     let extraTd = document.createElement("td");
-                    extraTd.colSpan = headers.length + 1; // 跨展開按鈕欄及所有詳細欄位
-
+                    extraTd.colSpan = headers.length + 1;
+                    
                     // 建立內部表格顯示額外資訊
                     let extraTable = document.createElement("table");
                     extraTable.style.width = "100%";
@@ -244,7 +241,7 @@ async function loadHistory() {
                         extraHeaderRow.appendChild(th);
                     });
                     extraTable.appendChild(extraHeaderRow);
-
+                    
                     let extraDataRow = document.createElement("tr");
                     extraFields.extraIndexes.forEach((extraIndex, idx) => {
                         let td = document.createElement("td");
@@ -254,7 +251,7 @@ async function loadHistory() {
                         extraDataRow.appendChild(td);
                     });
                     extraTable.appendChild(extraDataRow);
-
+                    
                     extraTd.appendChild(extraTable);
                     extraTr.appendChild(extraTd);
                     detailTable.appendChild(extraTr);
