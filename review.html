@@ -37,22 +37,29 @@
     
     <!-- 詳細資料區塊 -->
     <div id="reviewDetails" style="margin-top: 20px;"></div>
+    
+    <!-- 動態插入輸入欄位 (account、responsible、project、uploadTime) -->
+    <div id="reviewInputs"></div>
+    
+    <!-- 主管意見輸入 -->
+    <input type="text" id="comment" placeholder="輸入主管意見">
+    
+    <!-- 提交按鈕與 loading spinner -->
+    <button id="submitBtn" onclick="submitReview('approve')">批准</button>
+    <button id="submitBtnReject" onclick="submitReview('reject')">退回</button>
+    <div id="spinner" style="display:none;">Loading...</div>
   </div>
   
-  <!-- 引入 script.js，內含 loadReviewData、displayReviewDetails 與其它相關函式 -->
+  <!-- 引入 script.js -->
   <script src="script.js"></script>
-  <!-- 監聽下拉選單變更，顯示詳細資料 -->
+  <!-- DOM 載入完成後，執行資料載入與動態插入輸入欄位 -->
   <script>
-    document.getElementById("reviewList").addEventListener("change", function() {
-      const selectedTask = this.value;
-      displayReviewDetails(selectedTask);
+    window.addEventListener("DOMContentLoaded", () => {
+      loadReviewData();
+      insertReviewInputs();
     });
-    // 初始載入待審核資料
-    loadReviewData();
   </script>
-    <input type="text" id="comment" placeholder="輸入主管意見">
-   <button onclick="submitReview('approve')">批准</button>
-   <button onclick="submitReview('reject')">退回</button>
 </body>
 </html>
+
 
