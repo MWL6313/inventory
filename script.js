@@ -647,4 +647,4 @@ async function submitReview(decision) {
     }
 }
 
-window.addEventListener("DOMContentLoaded", loadReviewData);
+// window.addEventListener("DOMContentLoaded", loadReviewData);
