@@ -449,6 +449,7 @@ let reviewDataGlobal = null;
 /*------------------------------------------
   1. 取得待審核資料，並填入下拉選單
 -------------------------------------------*/
+// 1. 載入審核資料
 async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
@@ -503,7 +504,7 @@ async function loadReviewData() {
             displayReviewDetails(select.value);
         }
         
-        // 當選擇改變時，也自動載入詳細資料
+        // 當選擇改變時，自動載入詳細資料
         select.addEventListener("change", function() {
             if (this.value !== "") {
                 displayReviewDetails(this.value);
@@ -515,31 +516,26 @@ async function loadReviewData() {
     }
 }
 
-/*------------------------------------------
-  2. 輔助函式：轉換 Google Drive 連結為可預覽連結
--------------------------------------------*/
+
+// 2. 輔助函式：轉換 Google Drive 連結為可預覽連結
 function convertGoogleDriveLink(link) {
     if (!link) return "";
     let match = link.match(/[-\w]{25,}/);
     return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 }
 
-/*------------------------------------------
-  3. 輔助函式：建立縮圖 HTML（以 img 元素）
--------------------------------------------*/
+
+// 3. 輔助函式：建立縮圖 HTML（以 img 元素）
 function createThumbnail(link) {
     if (!link || link.trim() === "" || link.trim() === "未提供照片") {
         return "";
     }
     const convertedLink = convertGoogleDriveLink(link);
-    // 回傳帶有 inline onclick 的 HTML 字串
     return `<img src="${convertedLink}" alt="照片" width="50" style="margin:2px;cursor:pointer;" onclick="window.open('${link.trim()}', '_blank')">`;
 }
 
 
-/*------------------------------------------
-  4. 顯示選擇任務的詳細資料（父行、子行、子行的子行）
--------------------------------------------*/
+// 4. 顯示選擇任務的詳細資料
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
@@ -550,26 +546,19 @@ function displayReviewDetails(taskName) {
     if (taskRows.length === 0) return;
 
     // 定義各層級欄位（依照欄位索引）
-    // 父行：展開按鈕、任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、照片連結(8)、資料夾位置(22)
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
-    // 子行：展開按鈕、點位或項次(1)、項目(2)、單位(3)、儲備量(4)、盤點量(5)、狀態(6)、備註(7)
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-    // 子行的子行：展開按鈕、複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
-    // 設定子行的子行各欄位寬度（包含第一欄展開按鈕），請依需求調整
     const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
 
-    // 取得顯示詳細資料的容器
     const container = document.getElementById("reviewDetails");
     container.innerHTML = "";
 
-    // 建立一個表格來呈現階層資料，並設定固定佈局
     const table = document.createElement("table");
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
-    table.style.tableLayout = "fixed"; // 使欄位寬度生效
+    table.style.tableLayout = "fixed";
 
-    // --- 父行區段 ---
     // 父行標題
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
@@ -581,9 +570,8 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
-    // 父行資料（取 taskRows 第一筆的資料）
+    // 父行資料
     let parentRow = document.createElement("tr");
-    // 父行展開按鈕，用於控制子行區塊的顯示/隱藏
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
     parentExpandButton.innerText = "＋";
@@ -601,8 +589,7 @@ function displayReviewDetails(taskName) {
     expandTd.appendChild(parentExpandButton);
     parentRow.appendChild(expandTd);
 
-    // 其他父行欄位資料：依序填入
-    // 任務名稱(0)、到點感應時間(10)、上傳時間(11)、負責人(9)、部門(21)、照片連結(8)（縮圖）、資料夾位置(22)（超連結）
+    // 父行其他欄位資料
     let parentValues = [
         taskRows[0][0],
         taskRows[0][10],
@@ -621,12 +608,10 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
-    // --- 子行區段 ---
+    // 子行區段
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
-    childSection.style.display = "none"; // 初始隱藏
-
-    // 子行標題
+    childSection.style.display = "none";
     let childHeaderRow = document.createElement("tr");
     childHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -637,11 +622,8 @@ function displayReviewDetails(taskName) {
     });
     childSection.appendChild(childHeaderRow);
 
-    // 對於該任務的每筆資料，建立一個子行與其對應的子行的子行
     taskRows.forEach((row, idx) => {
-        // 建立子行
         let childRow = document.createElement("tr");
-        // 子行展開按鈕 (用於控制子行的子行顯示)
         let childExpandTd = document.createElement("td");
         let childExpandButton = document.createElement("button");
         childExpandButton.innerText = "＋";
@@ -659,7 +641,6 @@ function displayReviewDetails(taskName) {
         childExpandTd.appendChild(childExpandButton);
         childRow.appendChild(childExpandTd);
 
-        // 子行資料：依序填入點位或項次(1)、項目(2)、單位(3)、儲備量(4)、盤點量(5)、狀態(6)、備註(7)
         let childIndices = [1, 2, 3, 4, 5, 6, 7];
         childIndices.forEach(i => {
             let td = document.createElement("td");
@@ -668,25 +649,20 @@ function displayReviewDetails(taskName) {
             td.style.padding = "8px";
             childRow.appendChild(td);
         });
-        // （注意：原先的照片連結已移至父行，不再在子行顯示）
         childSection.appendChild(childRow);
 
-        // --- 子行的子行區段 ---
-        // 用一個新的 <tr> 包含一個單一的 <td>，這個 <td> 的 colSpan 要覆蓋整個外層表格的欄位數（假設外層表格有 8 欄）
+        // 子行的子行區段
         let subchildRowWrapper = document.createElement("tr");
         let subchildCell = document.createElement("td");
-        subchildCell.colSpan = parentHeaders.length; // 父行總欄數（例如8欄）
-        subchildCell.style.padding = "0"; // 取消外層的padding
+        subchildCell.colSpan = parentHeaders.length;
+        subchildCell.style.padding = "0";
         subchildCell.style.border = "none";
         
-        // 建立內層（巢狀）表格，專門用於顯示子行的子行資料，並獨立設定寬度
         let innerTable = document.createElement("table");
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
-        innerTable.style.tableLayout = "fixed"; // 固定佈局，使 <colgroup> 生效
+        innerTable.style.tableLayout = "fixed";
         
-        // 定義內層表格的 colgroup，欄位數與 subchildHeaders 數量一致
-        const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
         let colgroup = document.createElement("colgroup");
         subchildWidths.forEach(width => {
             let col = document.createElement("col");
@@ -695,7 +671,6 @@ function displayReviewDetails(taskName) {
         });
         innerTable.appendChild(colgroup);
         
-        // 建立內層表格的標題列
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
             let th = document.createElement("th");
@@ -706,14 +681,11 @@ function displayReviewDetails(taskName) {
         });
         innerTable.appendChild(innerHeaderRow);
         
-        // 建立內層表格的資料列
         let innerDataRow = document.createElement("tr");
-        // 由於第一欄為展開按鈕（但在內層表格裡直接顯示空白即可）
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
         innerDataRow.appendChild(emptyTd);
         
-        // 依序填入：複查照片連結(14)、處理狀態(12)、複查情形(13)、複查時間(15)、主管意見(18)、確認時間(19)、處理紀錄(20)
         let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
         subchildIndices.forEach(i => {
             let td = document.createElement("td");
@@ -728,13 +700,9 @@ function displayReviewDetails(taskName) {
         });
         innerTable.appendChild(innerDataRow);
         
-        // 將內層表格放入 subchildCell，再放入 subchildRowWrapper
         subchildCell.appendChild(innerTable);
         subchildRowWrapper.appendChild(subchildCell);
-        
-        // 最後將子行的子行（巢狀表格）加入到子行區段
         childSection.appendChild(subchildRowWrapper);
-
     });
 
     table.appendChild(childSection);
@@ -742,14 +710,15 @@ function displayReviewDetails(taskName) {
     container.appendChild(table);
 }
 
-// 新增一個函式，用來動態插入必要的輸入欄位
+
+// 5. 動態插入必需的輸入欄位
 function insertReviewInputs() {
     // 如果尚未插入，則建立一個包含輸入欄位的區塊
     if (!document.getElementById("reviewInputs")) {
         const reviewInputsDiv = document.createElement("div");
         reviewInputsDiv.id = "reviewInputs";
-        // 這裡我們設定四個欄位：
-        // account：目前登入帳號 (將存放在 Q 欄)
+        // 說明：
+        // account：目前登入帳號 (用於更新 Q 欄)
         // responsible：任務負責人 (用於篩選，存放在 J 欄)
         // project：項目
         // uploadTime：上傳時間
@@ -759,17 +728,14 @@ function insertReviewInputs() {
             <input type="text" id="project" placeholder="項目">
             <input type="text" id="uploadTime" placeholder="上傳時間">
         `;
-        // 將此區塊插入到主要容器中，例：放在 reviewDetails 下方或 container 內皆可
+        // 例如將輸入區塊插入到 container 內部，緊接在 reviewDetails 之後
         const container = document.querySelector(".container");
         container.appendChild(reviewInputsDiv);
     }
 }
 
 
-
-
-// 🚀 4. 主管審核 - 提交
-// 原有的 submitReview 函式，會取得上述動態插入的輸入欄位值
+// 6. 主管審核 - 提交
 async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
@@ -791,8 +757,8 @@ async function submitReview(decision) {
         return;
     }
 
-    submitBtn.disabled = true;
-    spinner.style.display = 'block';
+    if (submitBtn) submitBtn.disabled = true;
+    if (spinner) spinner.style.display = 'block';
 
     try {
         const response = await fetch(`${API_BASE_URL}/approve`, {
@@ -815,14 +781,14 @@ async function submitReview(decision) {
         console.error("🔴[ERROR] 審核提交錯誤：", error);
         alert("系統錯誤，請稍後再試");
     } finally {
-        submitBtn.disabled = false;
-        spinner.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
     }
 }
 
-// 假設頁面載入時先呼叫 loadReviewData 與插入輸入欄位
+
+// 在 DOMContentLoaded 時呼叫載入函式與動態插入輸入欄位
 window.addEventListener("DOMContentLoaded", () => {
     loadReviewData();
     insertReviewInputs();
 });
-
