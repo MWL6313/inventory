@@ -747,24 +747,37 @@ function displayReviewDetails(taskName) {
 
 
 // 🚀 4. 主管審核 - 提交
+// 🚀 4. 主管審核 - 提交
 async function submitReview(decision) {
     let taskName = document.getElementById("reviewList").value;
     let comment = document.getElementById("comment").value.trim();
     let role = localStorage.getItem("role");
-    let department = localStorage.getItem("department");
+    // 假設負責人 (account)、項目 (project) 與上傳時間 (uploadTime) 為 input 欄位
+    let account = document.getElementById("account").value.trim();
+    let project = document.getElementById("project").value.trim();
+    let uploadTime = document.getElementById("uploadTime").value.trim();
 
-    console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, department });
+    // 假設網頁上有一個提交按鈕與 loading spinner 元素
+    let submitBtn = document.getElementById("submitBtn");
+    let spinner = document.getElementById("spinner");
 
-    if (!taskName || !comment) {
-        alert("請選擇任務並輸入審核意見");
+    console.log("🔹[DEBUG] 提交審核", { taskName, decision, comment, role, account, project, uploadTime });
+
+    // 檢查 taskName、comment、account、project 與 uploadTime 是否為空
+    if (!taskName || !comment || !account || !project || !uploadTime) {
+        alert("請選擇任務並輸入所有必要的審核資料");
         return;
     }
+
+    // 在提交期間禁用提交按鈕並顯示 loading spinner
+    submitBtn.disabled = true;
+    spinner.style.display = 'block';
 
     try {
         const response = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskName, decision, comment, role, department }),
+            body: JSON.stringify({ taskName, decision, comment, role, account, project, uploadTime }),
         });
 
         const data = await response.json();
@@ -779,6 +792,11 @@ async function submitReview(decision) {
     } catch (error) {
         console.error("🔴[ERROR] 審核提交錯誤：", error);
         alert("系統錯誤，請稍後再試");
+    } finally {
+        // 無論成功或失敗，都需恢復提交按鈕與隱藏 loading spinner
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
     }
 }
+
 
