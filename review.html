@@ -5,6 +5,8 @@
   <title>主管審核 - 詳細資料</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
+  <!-- 使用 defer 屬性確保在 DOM 載入後執行 -->
+  <script src="script.js" defer></script>
 </head>
 <body>
   <!-- 登入狀態檢查 -->
@@ -38,28 +40,27 @@
     <!-- 詳細資料區塊 -->
     <div id="reviewDetails" style="margin-top: 20px;"></div>
     
-    <!-- 動態插入輸入欄位 (account、responsible、project、uploadTime) -->
+    <!-- 動態插入輸入欄位區塊 -->
     <div id="reviewInputs"></div>
     
     <!-- 主管意見輸入 -->
     <input type="text" id="comment" placeholder="輸入主管意見">
     
     <!-- 提交按鈕與 loading spinner -->
-    <button id="submitBtn" onclick="submitReview('approve')">批准</button>
-    <button id="submitBtnReject" onclick="submitReview('reject')">退回</button>
+    <button id="submitBtn">批准</button>
+    <button id="submitBtnReject">退回</button>
     <div id="spinner" style="display:none;">Loading...</div>
   </div>
   
-  <!-- 引入 script.js -->
-  <script src="script.js"></script>
-  <!-- DOM 載入完成後，執行資料載入與動態插入輸入欄位 -->
+  <!-- 在 DOMContentLoaded 時呼叫資料載入與事件綁定 -->
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       loadReviewData();
       insertReviewInputs();
+      // 綁定按鈕事件，確保此時所有動態元素已存在
+      document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
+      document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
     });
   </script>
 </body>
 </html>
-
-
