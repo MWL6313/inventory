@@ -36,44 +36,6 @@ async function login() {
     }
 }
 
-// 取得 API 基本 URL
-const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
-
-// 🚀 登入功能
-async function login() {
-    let account = document.getElementById("account").value.trim();
-    let password = document.getElementById("password").value.trim();
-
-    console.log("🔹[DEBUG] 嘗試登入", { account, password });
-
-    if (!account || !password) {
-        document.getElementById("message").innerText = "請輸入帳號與密碼";
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ account, password }),
-        });
-
-        const data = await response.json();
-        console.log("🟢[DEBUG] 登入 API 回應", data);
-
-        if (data.success) {
-            localStorage.setItem("department", data.department);
-            localStorage.setItem("role", data.role);
-            window.location.href = "dashboard.html";
-        } else {
-            document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
-        }
-    } catch (error) {
-        console.error("🔴[ERROR] 登入請求錯誤：", error);
-        document.getElementById("message").innerText = "系統錯誤，請稍後再試";
-    }
-}
-
 // 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
     let typeSelect = document.getElementById("historyType");
