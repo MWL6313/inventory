@@ -449,15 +449,18 @@ let reviewDataGlobal = null;
 /*------------------------------------------
   1. 取得待審核資料，並填入下拉選單
 -------------------------------------------*/
-// 1. 載入審核資料
+let reviewDataGlobal = [];
+
+// 載入待審核資料
 async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
+    let account = localStorage.getItem("account"); // 登入帳號
 
-    console.log("🔹[DEBUG] 取得主管審核資料", { role, department });
+    console.log("🔹[DEBUG] 取得主管審核資料", { role, department, account });
 
-    if (!role || !department) {
-        console.error("🔴[ERROR] 角色或部門資訊缺失");
+    if (!role || !department || !account) {
+        console.error("🔴[ERROR] 角色、部門或帳號資訊缺失");
         return;
     }
 
@@ -474,20 +477,14 @@ async function loadReviewData() {
         const data = await response.json();
         console.log("🟢[DEBUG] 取得審核資料回應", data);
 
-        // 儲存全域資料以供後續顯示明細使用
         reviewDataGlobal = data;
 
         let select = document.getElementById("reviewList");
-        if (!select) return;
-
         select.innerHTML = "";
+
         if (data.length === 0) {
-            let option = document.createElement("option");
-            option.value = "";
-            option.innerText = "目前沒有待審核的資料";
-            select.appendChild(option);
+            select.innerHTML = `<option value="">目前沒有待審核的資料</option>`;
         } else {
-            // data[0] 為表頭，從 data[1] 開始抽取任務名稱（索引 0），以免重複
             const taskNames = new Set();
             for (let i = 1; i < data.length; i++) {
                 taskNames.add(data[i][0]);
@@ -499,12 +496,11 @@ async function loadReviewData() {
                 select.appendChild(option);
             });
         }
-        // 當下拉選單的選項不為空時，自動載入當前選擇項目的詳細資料
+
         if (select.value !== "") {
             displayReviewDetails(select.value);
         }
-        
-        // 當選擇改變時，自動載入詳細資料
+
         select.addEventListener("change", function() {
             if (this.value !== "") {
                 displayReviewDetails(this.value);
@@ -516,44 +512,13 @@ async function loadReviewData() {
     }
 }
 
-
-// 2. 輔助函式：轉換 Google Drive 連結為可預覽連結
-function convertGoogleDriveLink(link) {
-    if (!link) return "";
-    let match = link.match(/[-\w]{25,}/);
-    return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
-}
-
-
-// 3. 輔助函式：建立縮圖 HTML（以 img 元素）
-function createThumbnail(link) {
-    if (!link || link.trim() === "" || link.trim() === "未提供照片") {
-        return "";
-    }
-    const convertedLink = convertGoogleDriveLink(link);
-    return `<img src="${convertedLink}" alt="照片" width="50" style="margin:2px;cursor:pointer;" onclick="window.open('${link.trim()}', '_blank')">`;
-}
-
-
-// 4. 顯示選擇任務的詳細資料
+// 顯示任務詳細資料 (同時自動填入隱藏欄位)
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
-    // 取得表頭 (第一筆資料)
-    const header = reviewDataGlobal[0];
-    // 篩選出所有該任務的資料（從 data[1] 開始）
     const taskRows = reviewDataGlobal.slice(1).filter(row => row[0] === taskName);
     if (taskRows.length === 0) return;
-    
-    // 設定必要的隱藏欄位
-    document.getElementById("responsible").value = row[9];    // 負責人 (J欄)
-    document.getElementById("account").value = localStorage.getItem("account"); // 登入帳號
-    document.getElementById("project").value = row[2];        // 項目 (C欄)
-    document.getElementById("uploadTime").value = row[11];    // 上傳時間 (L欄)
 
-
-    
-    // 定義各層級欄位（依照欄位索引）
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
@@ -567,7 +532,6 @@ function displayReviewDetails(taskName) {
     table.style.borderCollapse = "collapse";
     table.style.tableLayout = "fixed";
 
-    // 父行標題
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -578,7 +542,6 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
-    // 父行資料
     let parentRow = document.createElement("tr");
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
@@ -586,27 +549,19 @@ function displayReviewDetails(taskName) {
     parentExpandButton.classList.add("expand-btn");
     parentExpandButton.onclick = function () {
         let childSection = document.getElementById("childSection");
-        if (childSection.style.display === "none") {
-            childSection.style.display = "table-row-group";
-            parentExpandButton.innerText = "－";
-        } else {
-            childSection.style.display = "none";
-            parentExpandButton.innerText = "＋";
-        }
+        childSection.style.display = childSection.style.display === "none" ? "table-row-group" : "none";
+        parentExpandButton.innerText = childSection.style.display === "none" ? "＋" : "－";
     };
     expandTd.appendChild(parentExpandButton);
     parentRow.appendChild(expandTd);
 
-    // 父行其他欄位資料
     let parentValues = [
-        taskRows[0][0],
-        taskRows[0][10],
-        taskRows[0][11],
-        taskRows[0][9],
-        taskRows[0][21],
+        taskRows[0][0], taskRows[0][10], taskRows[0][11],
+        taskRows[0][9], taskRows[0][21],
         createThumbnail(taskRows[0][8]),
         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
     ];
+
     parentValues.forEach(value => {
         let td = document.createElement("td");
         td.innerHTML = value;
@@ -616,10 +571,10 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
-    // 子行區段
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
     childSection.style.display = "none";
+
     let childHeaderRow = document.createElement("tr");
     childHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -635,22 +590,15 @@ function displayReviewDetails(taskName) {
         let childExpandTd = document.createElement("td");
         let childExpandButton = document.createElement("button");
         childExpandButton.innerText = "＋";
-        childExpandButton.classList.add("expand-btn");
-        childExpandButton.onclick = function () {
-            let subchildSection = document.getElementById("subchildSection-" + idx);
-            if (subchildSection.style.display === "none") {
-                subchildSection.style.display = "table-row-group";
-                childExpandButton.innerText = "－";
-            } else {
-                subchildSection.style.display = "none";
-                childExpandButton.innerText = "＋";
-            }
+        childExpandButton.onclick = () => {
+            let subchildSection = document.getElementById(`subchildSection-${idx}`);
+            subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
+            childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
         };
         childExpandTd.appendChild(childExpandButton);
         childRow.appendChild(childExpandTd);
 
-        let childIndices = [1, 2, 3, 4, 5, 6, 7];
-        childIndices.forEach(i => {
+        [1,2,3,4,5,6,7].forEach(i => {
             let td = document.createElement("td");
             td.innerText = row[i] || "";
             td.style.border = "1px solid #ddd";
@@ -658,135 +606,45 @@ function displayReviewDetails(taskName) {
             childRow.appendChild(td);
         });
         childSection.appendChild(childRow);
-
-        // 子行的子行區段
-        let subchildRowWrapper = document.createElement("tr");
-        let subchildCell = document.createElement("td");
-        subchildCell.colSpan = parentHeaders.length;
-        subchildCell.style.padding = "0";
-        subchildCell.style.border = "none";
-        
-        let innerTable = document.createElement("table");
-        innerTable.style.width = "100%";
-        innerTable.style.borderCollapse = "collapse";
-        innerTable.style.tableLayout = "fixed";
-        
-        let colgroup = document.createElement("colgroup");
-        subchildWidths.forEach(width => {
-            let col = document.createElement("col");
-            col.style.width = width;
-            colgroup.appendChild(col);
-        });
-        innerTable.appendChild(colgroup);
-        
-        let innerHeaderRow = document.createElement("tr");
-        subchildHeaders.forEach(text => {
-            let th = document.createElement("th");
-            th.innerText = text;
-            th.style.border = "1px solid #ddd";
-            th.style.padding = "8px";
-            innerHeaderRow.appendChild(th);
-        });
-        innerTable.appendChild(innerHeaderRow);
-        
-        let innerDataRow = document.createElement("tr");
-        let emptyTd = document.createElement("td");
-        emptyTd.innerText = "";
-        innerDataRow.appendChild(emptyTd);
-        
-        let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
-        subchildIndices.forEach(i => {
-            let td = document.createElement("td");
-            if (i === 14) {
-                td.innerHTML = createThumbnail(row[i]);
-            } else {
-                td.innerText = row[i] || "";
-            }
-            td.style.border = "1px solid #ddd";
-            td.style.padding = "8px";
-            innerDataRow.appendChild(td);
-        });
-        innerTable.appendChild(innerDataRow);
-        
-        subchildCell.appendChild(innerTable);
-        subchildRowWrapper.appendChild(subchildCell);
-        childSection.appendChild(subchildRowWrapper);
     });
 
     table.appendChild(childSection);
-    container.innerHTML = "";
     container.appendChild(table);
+
+    // 自動設定隱藏欄位（重要調整）
+    document.getElementById("responsible").value = taskRows[0][9];
+    document.getElementById("project").value = taskRows[0][2];
+    document.getElementById("uploadTime").value = taskRows[0][11];
+    document.getElementById("account").value = account;
 }
-
-
-// 動態插入必要欄位（hidden inputs）
-function insertReviewInputs() {
-    const reviewInputsDiv = document.getElementById("reviewInputs");
-
-    reviewInputsDiv.innerHTML = `
-        <input type="hidden" id="account">
-        <input type="hidden" id="responsible">
-        <input type="hidden" id="project">
-        <input type="hidden" id="uploadTime">
-    `;
-}
-
-
-// 6. 主管審核 - 提交
 
 async function submitReview(decision) {
-    let taskName = document.getElementById("reviewList").value;
-    let comment = document.getElementById("comment").value.trim();
-    let role = localStorage.getItem("role");
+    const fields = ["reviewList", "comment", "account", "responsible", "project", "uploadTime"];
+    const [taskName, comment, account, responsible, project, uploadTime] = fields.map(id => document.getElementById(id).value.trim());
 
-    let account = document.getElementById("account").value.trim();
-    let responsible = document.getElementById("responsible").value.trim();
-    let project = document.getElementById("project").value.trim();
-    let uploadTime = document.getElementById("uploadTime").value.trim();
-
-    let submitBtn = document.getElementById("submitBtn");
-    let submitBtnReject = document.getElementById("submitBtnReject");
-    let spinner = document.getElementById("spinner");
-
-    if (!taskName || !comment || !account || !responsible || !project || !uploadTime) {
-        alert("資料不完整，無法提交");
+    if (!fields.every(f => document.getElementById(f).value.trim())) {
+        alert("請填寫所有必要資訊！");
         return;
     }
 
-    submitBtn.disabled = true;
-    submitBtnReject.disabled = true;
-    spinner.style.display = 'block';
+    document.getElementById("submitBtn").disabled = true;
+    document.getElementById("spinner").style.display = 'block';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/approve`, {
+        const res = await fetch(`${API_BASE_URL}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskName, decision, comment, role, account, responsible, project, uploadTime }),
+            body: JSON.stringify({ taskName, decision, comment, role: localStorage.getItem("role"), account, responsible, project, uploadTime }),
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert("審核成功，新的狀態：" + data.newStatus);
-            location.reload();
-        } else {
-            alert("審核失敗：" + data.message);
-        }
-    } catch (error) {
-        alert("系統錯誤，請稍後再試");
+        const data = await res.json();
+        alert(data.success ? `成功：${data.newStatus}` : `失敗：${data.message}`);
+        if (data.success) location.reload();
+    } catch (e) {
+        alert("系統錯誤，稍後再試！");
     } finally {
-        submitBtn.disabled = false;
-        submitBtnReject.disabled = false;
-        spinner.style.display = 'none';
+        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("spinner").style.display = 'none';
     }
 }
 
-// DOMContentLoaded 初始化
-window.addEventListener("DOMContentLoaded", () => {
-    insertReviewInputs();
-    loadReviewData();
-
-    document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
-    document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
-});
-
+window.addEventListener("DOMContentLoaded", loadReviewData);
