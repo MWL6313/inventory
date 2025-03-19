@@ -40,26 +40,18 @@
     <!-- 詳細資料區塊 -->
     <div id="reviewDetails" style="margin-top: 20px;"></div>
     
-    <!-- 動態插入輸入欄位區塊 (insertReviewInputs() 會將 account、responsible、project、uploadTime 插入這裡) -->
-    <div id="reviewInputs"></div>
-    
+     <!-- 隱藏欄位 (用來存放必要資料) -->
+    <input type="hidden" id="account">
+    <input type="hidden" id="responsible">
+    <input type="hidden" id="project">
+    <input type="hidden" id="uploadTime">
+
     <!-- 主管意見輸入 -->
     <input type="text" id="comment" placeholder="輸入主管意見">
-    
-    <!-- 提交按鈕與 loading spinner -->
+
     <button id="submitBtn">批准</button>
     <button id="submitBtnReject">退回</button>
-    <div id="spinner" style="display:none;">Loading...</div>
+    <div id="spinner" style="display:none;">處理中...</div>
   </div>
-  
-  <!-- 在 DOMContentLoaded 時執行資料載入與事件綁定 -->
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      loadReviewData();
-      insertReviewInputs();
-      document.getElementById("submitBtn").addEventListener("click", () => submitReview('approve'));
-      document.getElementById("submitBtnReject").addEventListener("click", () => submitReview('reject'));
-    });
-  </script>
 </body>
 </html>
