@@ -2,6 +2,41 @@
 const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";  
 
 // 🚀 登入功能（保持不變）
+// async function login() {
+//     let account = document.getElementById("account").value.trim();
+//     let password = document.getElementById("password").value.trim();
+
+//     console.log("🔹[DEBUG] 嘗試登入", { account, password });
+
+//     if (!account || !password) {
+//         document.getElementById("message").innerText = "請輸入帳號與密碼";
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/login`, {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ account, password }),
+//         });
+
+//         const data = await response.json();
+//         console.log("🟢[DEBUG] 登入 API 回應", data);
+
+//         if (data.success) {
+//             localStorage.setItem("department", data.department);
+//             localStorage.setItem("role", data.role);
+//             window.location.href = "dashboard.html";
+//         } else {
+//             document.getElementById("message").innerText = "登入失敗，請檢查帳號或密碼";
+//         }
+//     } catch (error) {
+//         console.error("🔴[ERROR] 登入請求錯誤：", error);
+//         document.getElementById("message").innerText = "系統錯誤，請稍後再試";
+//     }
+// }
+
+// 🚀 登入功能（調整後，加入儲存 token）
 async function login() {
     let account = document.getElementById("account").value.trim();
     let password = document.getElementById("password").value.trim();
@@ -24,6 +59,8 @@ async function login() {
         console.log("🟢[DEBUG] 登入 API 回應", data);
 
         if (data.success) {
+            // 儲存 token、部門與角色資訊到 localStorage
+            localStorage.setItem("token", data.token);  // 新增 token 儲存
             localStorage.setItem("department", data.department);
             localStorage.setItem("role", data.role);
             window.location.href = "dashboard.html";
@@ -35,6 +72,7 @@ async function login() {
         document.getElementById("message").innerText = "系統錯誤，請稍後再試";
     }
 }
+
 
 // 🚀 讀取歷史資料並分組顯示
 async function loadHistory() {
