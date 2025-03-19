@@ -391,7 +391,75 @@ function convertGoogleDriveLink(link) {
 
 
 // 🚀 3. 主管審核 - 取得資料
-// 🚀 3. 主管審核 - 取得資料
+// // 🚀 3. 主管審核 - 取得資料
+// async function loadReviewData() {
+//     let role = localStorage.getItem("role");
+//     let department = localStorage.getItem("department");
+
+//     console.log("🔹[DEBUG] 取得主管審核資料", { role, department });
+
+//     if (!role || !department) {
+//         console.error("🔴[ERROR] 角色或部門資訊缺失");
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
+//             method: "POST",
+//             headers: { 
+//                 "Content-Type": "application/json",
+//                 "Authorization": localStorage.getItem("token")
+//             },
+//             body: JSON.stringify({ role, department }),
+//         });
+
+//         const data = await response.json();
+//         console.log("🟢[DEBUG] 取得審核資料回應", data);
+
+//         if (!Array.isArray(data)) {
+//             console.error("🔴[ERROR] API 回傳的數據不是陣列格式:", data);
+//             return;
+//         }
+
+//         let select = document.getElementById("reviewList");
+//         if (!select) return;
+
+//         select.innerHTML = "";
+//         if(data.length === 0){
+//             let option = document.createElement("option");
+//             option.value = "";
+//             option.innerText = "目前沒有待審核的資料";
+//             select.appendChild(option);
+//         } else {
+//             data.forEach(row => {
+//                 let option = document.createElement("option");
+//                 option.value = row[0];
+//                 option.innerText = row[0];
+//                 select.appendChild(option);
+//             });
+//         }
+//     } catch (error) {
+//         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
+//     }
+// }
+
+
+// 輔助函式：將多個逗號分隔的連結轉換為縮圖 HTML
+function convertPhotoLinksToThumbnails(linksStr) {
+    if (!linksStr || linksStr.trim() === "" || linksStr.trim() === "未提供照片") {
+        return "";
+    }
+    let links = linksStr.split(",").filter(link => link.trim() !== "");
+    let html = "";
+    links.forEach(link => {
+        let trimmed = link.trim();
+        let imgUrl = convertGoogleDriveLink(trimmed);
+        html += `<img src="${imgUrl}" alt="照片" width="50" style="margin:2px;cursor:pointer;" onclick="window.open('${trimmed}','_blank')">`;
+    });
+    return html;
+}
+
+// 主管審核資料顯示：以父行子行方式呈現
 async function loadReviewData() {
     let role = localStorage.getItem("role");
     let department = localStorage.getItem("department");
@@ -416,28 +484,178 @@ async function loadReviewData() {
         const data = await response.json();
         console.log("🟢[DEBUG] 取得審核資料回應", data);
 
-        if (!Array.isArray(data)) {
-            console.error("🔴[ERROR] API 回傳的數據不是陣列格式:", data);
+        if (!Array.isArray(data) || data.length < 2) {
+            console.error("🔴[ERROR] API 回傳的數據格式不正確或無待審核資料");
+            document.getElementById("reviewTable").innerHTML = "<p>目前沒有待審核的資料</p>";
             return;
         }
 
-        let select = document.getElementById("reviewList");
-        if (!select) return;
+        // 清空顯示區域
+        let tableContainer = document.getElementById("reviewTable");
+        tableContainer.innerHTML = "";
 
-        select.innerHTML = "";
-        if(data.length === 0){
-            let option = document.createElement("option");
-            option.value = "";
-            option.innerText = "目前沒有待審核的資料";
-            select.appendChild(option);
-        } else {
-            data.forEach(row => {
-                let option = document.createElement("option");
-                option.value = row[0];
-                option.innerText = row[0];
-                select.appendChild(option);
-            });
-        }
+        // 建立表頭（依父行欄位）
+        let table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+
+        let headerRow = document.createElement("tr");
+        ["", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "資料夾位置"].forEach(headerText => {
+            let th = document.createElement("th");
+            th.innerText = headerText;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // 針對每筆待審核資料 (排除表頭：data[0])
+        data.slice(1).forEach((row, index) => {
+            // 父行
+            let parentRow = document.createElement("tr");
+            parentRow.style.border = "1px solid #ddd";
+            // 第一欄：展開按鈕
+            let expandCell = document.createElement("td");
+            let expandButton = document.createElement("button");
+            expandButton.innerText = "+";
+            expandButton.classList.add("expand-btn");
+            expandButton.style.width = "35px"; // 如 CSS 定義
+            expandButton.onclick = function () {
+                let childRow1 = document.getElementById(`review-child1-${index}`);
+                let childRow2 = document.getElementById(`review-child2-${index}`);
+                if (childRow1.style.display === "none") {
+                    childRow1.style.display = "table-row";
+                    childRow2.style.display = "table-row";
+                    expandButton.innerText = "-";
+                } else {
+                    childRow1.style.display = "none";
+                    childRow2.style.display = "none";
+                    expandButton.innerText = "+";
+                }
+            };
+            expandCell.appendChild(expandButton);
+            parentRow.appendChild(expandCell);
+
+            // 任務名稱 (col0)
+            let cellTaskName = document.createElement("td");
+            cellTaskName.innerText = row[0];
+            parentRow.appendChild(cellTaskName);
+
+            // 到點感應時間 (col10)
+            let cellArrive = document.createElement("td");
+            cellArrive.innerText = row[10];
+            parentRow.appendChild(cellArrive);
+
+            // 上傳時間 (col11)
+            let cellUpload = document.createElement("td");
+            cellUpload.innerText = row[11];
+            parentRow.appendChild(cellUpload);
+
+            // 負責人 (col9)
+            let cellResponsible = document.createElement("td");
+            cellResponsible.innerText = row[9];
+            parentRow.appendChild(cellResponsible);
+
+            // 部門 (col21)
+            let cellDept = document.createElement("td");
+            cellDept.innerText = row[21];
+            parentRow.appendChild(cellDept);
+
+            // 資料夾位置 (col22) － 以「報表位置」超連結顯示
+            let cellFolder = document.createElement("td");
+            if (row[22] && row[22].trim() !== "") {
+                let a = document.createElement("a");
+                a.href = row[22];
+                a.target = "_blank";
+                a.innerText = "報表位置";
+                cellFolder.appendChild(a);
+            } else {
+                cellFolder.innerText = "";
+            }
+            parentRow.appendChild(cellFolder);
+
+            table.appendChild(parentRow);
+
+            // 子行 1：詳細資料 (第一層)
+            let childRow1 = document.createElement("tr");
+            childRow1.id = `review-child1-${index}`;
+            childRow1.style.display = "none";
+            childRow1.style.border = "1px solid #ddd";
+
+            // 第一欄空白
+            let emptyCell = document.createElement("td");
+            childRow1.appendChild(emptyCell);
+            // 點位或項次 (col1)
+            let cellPoint = document.createElement("td");
+            cellPoint.innerText = row[1];
+            childRow1.appendChild(cellPoint);
+            // 項目 (col2)
+            let cellItem = document.createElement("td");
+            cellItem.innerText = row[2];
+            childRow1.appendChild(cellItem);
+            // 單位 (col3)
+            let cellUnit = document.createElement("td");
+            cellUnit.innerText = row[3];
+            childRow1.appendChild(cellUnit);
+            // 儲備量 (col4)
+            let cellReserve = document.createElement("td");
+            cellReserve.innerText = row[4];
+            childRow1.appendChild(cellReserve);
+            // 盤點量 (col5)
+            let cellCount = document.createElement("td");
+            cellCount.innerText = row[5];
+            childRow1.appendChild(cellCount);
+            // 狀態 (col6)
+            let cellStatus = document.createElement("td");
+            cellStatus.innerText = row[6];
+            childRow1.appendChild(cellStatus);
+            // 備註 (col7)
+            let cellNote = document.createElement("td");
+            cellNote.innerText = row[7];
+            childRow1.appendChild(cellNote);
+            // 照片連結 (col8) － 轉成縮圖
+            let cellPhoto = document.createElement("td");
+            cellPhoto.innerHTML = convertPhotoLinksToThumbnails(row[8]);
+            childRow1.appendChild(cellPhoto);
+
+            table.appendChild(childRow1);
+
+            // 子行 2：複查相關資料
+            let childRow2 = document.createElement("tr");
+            childRow2.id = `review-child2-${index}`;
+            childRow2.style.display = "none";
+            childRow2.style.border = "1px solid #ddd";
+
+            // 第一欄空白
+            let emptyCell2 = document.createElement("td");
+            childRow2.appendChild(emptyCell2);
+            // 複查照片連結 (col14) － 縮圖
+            let cellReviewPhoto = document.createElement("td");
+            cellReviewPhoto.innerHTML = convertPhotoLinksToThumbnails(row[14]);
+            childRow2.appendChild(cellReviewPhoto);
+            // 處理狀態 (col12)
+            let cellProcessStatus = document.createElement("td");
+            cellProcessStatus.innerText = row[12];
+            childRow2.appendChild(cellProcessStatus);
+            // 複查情形 (col13)
+            let cellReviewCondition = document.createElement("td");
+            cellReviewCondition.innerText = row[13];
+            childRow2.appendChild(cellReviewCondition);
+            // 複查時間 (col15)
+            let cellReviewTime = document.createElement("td");
+            cellReviewTime.innerText = row[15];
+            childRow2.appendChild(cellReviewTime);
+            // 確認時間 (col19)
+            let cellConfirmTime = document.createElement("td");
+            cellConfirmTime.innerText = row[19];
+            childRow2.appendChild(cellConfirmTime);
+            // 處理紀錄 (col20)
+            let cellProcessRecord = document.createElement("td");
+            cellProcessRecord.innerText = row[20];
+            childRow2.appendChild(cellProcessRecord);
+
+            table.appendChild(childRow2);
+        });
+
+        tableContainer.appendChild(table);
     } catch (error) {
         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
     }
