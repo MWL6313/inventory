@@ -544,7 +544,15 @@ function displayReviewDetails(taskName) {
     // 篩選出所有該任務的資料（從 data[1] 開始）
     const taskRows = reviewDataGlobal.slice(1).filter(row => row[0] === taskName);
     if (taskRows.length === 0) return;
+    
+    // 設定必要的隱藏欄位
+    document.getElementById("responsible").value = row[9];    // 負責人 (J欄)
+    document.getElementById("account").value = localStorage.getItem("account"); // 登入帳號
+    document.getElementById("project").value = row[2];        // 項目 (C欄)
+    document.getElementById("uploadTime").value = row[11];    // 上傳時間 (L欄)
 
+
+    
     // 定義各層級欄位（依照欄位索引）
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
@@ -711,27 +719,16 @@ function displayReviewDetails(taskName) {
 }
 
 
-// 5. 動態插入必需的輸入欄位
+// 動態插入必要欄位（hidden inputs）
 function insertReviewInputs() {
-    // 如果尚未插入，則建立一個包含輸入欄位的區塊
-    if (!document.getElementById("reviewInputs")) {
-        const reviewInputsDiv = document.createElement("div");
-        reviewInputsDiv.id = "reviewInputs";
-        // 說明：
-        // account：目前登入帳號 (用於更新 Q 欄)
-        // responsible：任務負責人 (用於篩選，存放在 J 欄)
-        // project：項目
-        // uploadTime：上傳時間
-        reviewInputsDiv.innerHTML = `
-            <input type="text" id="account" placeholder="登入帳號">
-            <input type="text" id="responsible" placeholder="負責人">
-            <input type="text" id="project" placeholder="項目">
-            <input type="text" id="uploadTime" placeholder="上傳時間">
-        `;
-        // 例如將輸入區塊插入到 container 內部，緊接在 reviewDetails 之後
-        const container = document.querySelector(".container");
-        container.appendChild(reviewInputsDiv);
-    }
+    const reviewInputsDiv = document.getElementById("reviewInputs");
+
+    reviewInputsDiv.innerHTML = `
+        <input type="hidden" id="account">
+        <input type="hidden" id="responsible">
+        <input type="hidden" id="project">
+        <input type="hidden" id="uploadTime">
+    `;
 }
 
 
