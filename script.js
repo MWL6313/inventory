@@ -719,7 +719,9 @@ function displayReviewDetails(taskName) {
 
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "", "主管意見", "", "處理紀錄"];
+        // const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+
     const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
 
     const container = document.getElementById("reviewDetails");
