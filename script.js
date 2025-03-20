@@ -922,9 +922,11 @@ taskRows.forEach((row, idx) => {
         td.style.padding = "8px";
         td.style.textAlign = "center";
         td.style.overflow = "hidden";
-        td.style.whiteSpace = "nowrap";  // 防止換行
-        td.style.textOverflow = "ellipsis";  // 文字超過則省略號
-    
+        // td.style.whiteSpace = "nowrap";  // 防止換行
+        // td.style.textOverflow = "ellipsis";  // 文字超過則省略號
+        td.style.whiteSpace = "normal"; // ✅ 允許換行顯示
+        td.style.wordWrap = "break-word"; // ✅ 當內容超出時，讓單字或字串自動換行
+        
         if (idx === 0) {
             // 若為照片欄 (索引 14)
             td.innerHTML = createThumbnail(row[index]);
