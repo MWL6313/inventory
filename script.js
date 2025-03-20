@@ -832,41 +832,117 @@ taskRows.forEach((row, idx) => {
     });
     innerTable.appendChild(innerHeaderRow);
 
-    // ★★★ 建立子行的子行資料列 ★★★
+//     // ★★★ 建立子行的子行資料列 ★★★
+//     let innerDataRow = document.createElement("tr");
+    
+//     // 第一欄留白 (與展開欄對齊)
+//     let emptyTd = document.createElement("td");
+//     emptyTd.innerText = "";
+//     emptyTd.style.border = "1px solid #ddd";
+//     emptyTd.style.padding = "8px";
+//     innerDataRow.appendChild(emptyTd);
+
+//     // 資料索引（複查照片連結在第14欄，其餘對應欄位）
+//     const subchildIndices = [14, 12, 13, 15, 18, 19, 20];
+//     subchildIndices.forEach((index, idx) => {
+//         let td = document.createElement("td");
+//         if (idx === 0) {
+//             // 若為照片欄 (索引14)
+//             td.innerHTML = createThumbnail(row[index]);
+//         } else {
+//             td.innerText = row[index] || "";
+//         }
+//         td.style.border = "1px solid #ddd";
+//         td.style.padding = "8px";
+//         innerDataRow.appendChild(td);
+//     });
+//     innerTable.appendChild(innerDataRow);
+
+//     // 將內部表格包覆進唯一的TD
+//     subchildCell.appendChild(innerTable);
+//     subchildRowWrapper.appendChild(subchildCell);
+
+//     // 將子行的子行加入到子行區段
+//     childSection.appendChild(subchildRowWrapper);
+// });
+
+    // --- 建立子行的子行區塊 ---
+    let subchildRowWrapper = document.createElement("tr");
+    subchildRowWrapper.id = `subchildSection-${idx}`;
+    subchildRowWrapper.style.display = "none";
+    
+    let subchildCell = document.createElement("td");
+    subchildCell.colSpan = childHeaders.length; // 確保子行的子行佔滿整欄
+    subchildCell.style.padding = "0px"; // 避免內部表格超出
+    
+    // 建立內部子表格
+    let innerTable = document.createElement("table");
+    innerTable.style.width = "100%";
+    innerTable.style.borderCollapse = "collapse";
+    innerTable.style.tableLayout = "fixed"; // 🚀 確保表格固定佈局
+    
+    // 設定欄位寬度
+    const subchildWidths = ["5%", "15%", "10%", "15%", "10%", "20%", "10%", "15%"];
+    let colgroup = document.createElement("colgroup");
+    subchildWidths.forEach(width => {
+        let col = document.createElement("col");
+        col.style.width = width;
+        colgroup.appendChild(col);
+    });
+    innerTable.appendChild(colgroup);
+    
+    // --- 建立標題列 ---
+    let innerHeaderRow = document.createElement("tr");
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    subchildHeaders.forEach((header, idx) => {
+        let th = document.createElement("th");
+        th.innerText = header;
+        th.style.border = "1px solid #ddd";
+        th.style.padding = "8px";
+        th.style.textAlign = "center";
+        innerHeaderRow.appendChild(th);
+    });
+    innerTable.appendChild(innerHeaderRow);
+    
+    // --- 建立資料列 ---
     let innerDataRow = document.createElement("tr");
     
-    // 第一欄留白 (與展開欄對齊)
+    // 第一欄留白
     let emptyTd = document.createElement("td");
     emptyTd.innerText = "";
     emptyTd.style.border = "1px solid #ddd";
     emptyTd.style.padding = "8px";
     innerDataRow.appendChild(emptyTd);
-
-    // 資料索引（複查照片連結在第14欄，其餘對應欄位）
+    
+    // 資料索引（複查照片連結在第 14 欄，其餘對應欄位）
     const subchildIndices = [14, 12, 13, 15, 18, 19, 20];
     subchildIndices.forEach((index, idx) => {
         let td = document.createElement("td");
+        td.style.border = "1px solid #ddd";
+        td.style.padding = "8px";
+        td.style.textAlign = "center";
+        td.style.overflow = "hidden";
+        td.style.whiteSpace = "nowrap";  // 防止換行
+        td.style.textOverflow = "ellipsis";  // 文字超過則省略號
+    
         if (idx === 0) {
-            // 若為照片欄 (索引14)
+            // 若為照片欄 (索引 14)
             td.innerHTML = createThumbnail(row[index]);
         } else {
             td.innerText = row[index] || "";
         }
-        td.style.border = "1px solid #ddd";
-        td.style.padding = "8px";
+    
         innerDataRow.appendChild(td);
     });
+    
     innerTable.appendChild(innerDataRow);
-
-    // 將內部表格包覆進唯一的TD
+    
+    // 將內部表格包進唯一的 TD
     subchildCell.appendChild(innerTable);
     subchildRowWrapper.appendChild(subchildCell);
-
-    // 將子行的子行加入到子行區段
     childSection.appendChild(subchildRowWrapper);
-});
-
-
+    
+    });
     table.appendChild(childSection);
     container.appendChild(table);
 
