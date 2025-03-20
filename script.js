@@ -882,7 +882,7 @@ taskRows.forEach((row, idx) => {
     innerTable.style.tableLayout = "fixed"; // 🚀 確保表格固定佈局
     
     // 設定欄位寬度
-    const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
+    const subchildWidths = ["0%", "5%", "5%", "10%", "10%", "10%", "10%", "50%"];
     let colgroup = document.createElement("colgroup");
     subchildWidths.forEach(width => {
         let col = document.createElement("col");
