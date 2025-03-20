@@ -761,7 +761,7 @@ function displayReviewDetails(taskName) {
         subchildRowWrapper.style.display = "none";
 
         let subchildCell = document.createElement("td");
-        subchildCell.colSpan = childHeaders.length + 1; // ✅ 確保對齊
+        subchildCell.colSpan = childHeaders.length; // ✅ 確保對齊
         subchildCell.style.width = "100%";
 
         // **建立內部子表格**
@@ -769,15 +769,6 @@ function displayReviewDetails(taskName) {
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
         innerTable.style.tableLayout = "fixed";
-
-        // ✅ **使用 colgroup 設定欄位寬度**
-        let colgroup = document.createElement("colgroup");
-        ["5%", "15%", "10%", "15%", "15%", "20%", "10%", "10%"].forEach(width => {
-            let col = document.createElement("col");
-            col.style.width = width;
-            colgroup.appendChild(col);
-        });
-        innerTable.appendChild(colgroup);
 
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
@@ -819,6 +810,12 @@ function displayReviewDetails(taskName) {
     container.appendChild(table);
 }
 
+    // 自動設定隱藏欄位
+    document.getElementById("responsible").value = taskRows[0][9];  // 負責人 (J欄)
+    document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
+    document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
+    document.getElementById("account").value = localStorage.getItem("account") || "";
+}
 
 
 async function submitReview(decision) {
