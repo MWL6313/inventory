@@ -783,52 +783,89 @@ function displayReviewDetails(taskName) {
     });
     childSection.appendChild(childHeaderRow);
 
-    taskRows.forEach((row, idx) => {
-        let childRow = document.createElement("tr");
-        let childExpandTd = document.createElement("td");
-        let childExpandButton = document.createElement("button");
-        childExpandButton.innerText = "＋";
-        childExpandButton.onclick = () => {
-            let subchildSection = document.getElementById(`subchildSection-${idx}`);
-            subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
-            childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
-        };
-        childExpandTd.appendChild(childExpandButton);
-        childRow.appendChild(childExpandTd);
+taskRows.forEach((row, idx) => {
+    // 建立子行
+    let childRow = document.createElement("tr");
+    let childExpandTd = document.createElement("td");
+    let childExpandButton = document.createElement("button");
+    childExpandButton.innerText = "＋";
+    childExpandButton.onclick = () => {
+        let subchildSection = document.getElementById(`subchildSection-${idx}`);
+        subchildSection.style.display = subchildSection.style.display === "none" ? "table-row" : "none";
+        childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
+    };
+    childExpandTd.appendChild(childExpandButton);
+    childRow.appendChild(childExpandTd);
 
-        [1, 2, 3, 4, 5, 6, 7].forEach(i => {
-            let td = document.createElement("td");
-            td.innerText = row[i] || "";
-            td.style.border = "1px solid #ddd";
-            td.style.padding = "8px";
-            childRow.appendChild(td);
-        });
-        childSection.appendChild(childRow);
-
-        let subchildRowWrapper = document.createElement("tr");
-        subchildRowWrapper.id = `subchildSection-${idx}`;
-        subchildRowWrapper.style.display = "none";
-        let subchildCell = document.createElement("td");
-        subchildCell.colSpan = childHeaders.length;
-        
-        let innerTable = document.createElement("table");
-        innerTable.style.width = "100%";
-        innerTable.style.borderCollapse = "collapse";
-
-        let innerHeaderRow = document.createElement("tr");
-        subchildHeaders.forEach(text => {
-            let th = document.createElement("th");
-            th.innerText = text;
-            th.style.border = "1px solid #ddd";
-            th.style.padding = "8px";
-            innerHeaderRow.appendChild(th);
-        });
-        innerTable.appendChild(innerHeaderRow);
-
-        subchildCell.appendChild(innerTable);
-        subchildRowWrapper.appendChild(subchildCell);
-        childSection.appendChild(subchildRowWrapper);
+    [1, 2, 3, 4, 5, 6, 7].forEach(i => {
+        let td = document.createElement("td");
+        td.innerText = row[i] || "";
+        td.style.border = "1px solid #ddd";
+        td.style.padding = "8px";
+        childRow.appendChild(td);
     });
+    childSection.appendChild(childRow);
+
+    // --- 以下為完全修正後的「子行的子行」 ---
+    let subchildRowWrapper = document.createElement("tr");
+    subchildRowWrapper.id = `subchildSection-${idx}`;
+    subchildRowWrapper.style.display = "none";
+
+    let subchildCell = document.createElement("td");
+    subchildCell.colSpan = childHeaders.length; // ★★★ colSpan要覆蓋子行的欄位數 ★★★
+
+    // 建立內部子表格
+    let innerTable = document.createElement("table");
+    innerTable.style.width = "100%";
+    innerTable.style.borderCollapse = "collapse";
+    innerTable.style.tableLayout = "fixed";
+
+    // ★★★ 建立子行的子行標題列 ★★★
+    let innerHeaderRow = document.createElement("tr");
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    subchildHeaders.forEach(header => {
+        let th = document.createElement("th");
+        th.innerText = header;
+        th.style.border = "1px solid #ddd";
+        th.style.padding = "8px";
+        innerHeaderRow.appendChild(th);
+    });
+    innerTable.appendChild(innerHeaderRow);
+
+    // ★★★ 建立子行的子行資料列 ★★★
+    let innerDataRow = document.createElement("tr");
+    
+    // 第一欄留白 (與展開欄對齊)
+    let emptyTd = document.createElement("td");
+    emptyTd.innerText = "";
+    emptyTd.style.border = "1px solid #ddd";
+    emptyTd.style.padding = "8px";
+    innerDataRow.appendChild(emptyTd);
+
+    // 資料索引（複查照片連結在第14欄，其餘對應欄位）
+    const subchildIndices = [14, 12, 13, 15, 18, 19, 20];
+    subchildIndices.forEach((index, idx) => {
+        let td = document.createElement("td");
+        if (idx === 0) {
+            // 若為照片欄 (索引14)
+            td.innerHTML = createThumbnail(row[index]);
+        } else {
+            td.innerText = row[index] || "";
+        }
+        td.style.border = "1px solid #ddd";
+        td.style.padding = "8px";
+        innerDataRow.appendChild(td);
+    });
+    innerTable.appendChild(innerDataRow);
+
+    // 將內部表格包覆進唯一的TD
+    subchildCell.appendChild(innerTable);
+    subchildRowWrapper.appendChild(subchildCell);
+
+    // 將子行的子行加入到子行區段
+    childSection.appendChild(subchildRowWrapper);
+});
+
 
     table.appendChild(childSection);
     container.appendChild(table);
