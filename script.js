@@ -640,6 +640,7 @@ async function loadReviewData() {
 //     document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
 //     document.getElementById("account").value = localStorage.getItem("account") || "";
 // }
+
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
@@ -659,7 +660,7 @@ function displayReviewDetails(taskName) {
         return;
     }
 
-    // 定義表格欄位
+    // **表頭定義**
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
@@ -674,7 +675,7 @@ function displayReviewDetails(taskName) {
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
 
-    // 父行標題
+    // **父行標題**
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -685,7 +686,7 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
-    // 父行資料
+    // **父行資料**
     let parentRow = document.createElement("tr");
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
@@ -716,7 +717,7 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
-    // 子行區段
+    // **子行區段**
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
     childSection.style.display = "none";
@@ -731,7 +732,7 @@ function displayReviewDetails(taskName) {
     });
     childSection.appendChild(childHeaderRow);
 
-    // 遍歷過濾後的任務行
+    // **遍歷過濾後的任務行**
     filteredRows.forEach((row, idx) => {
         let childRow = document.createElement("tr");
         let childExpandTd = document.createElement("td");
@@ -754,22 +755,22 @@ function displayReviewDetails(taskName) {
         });
         childSection.appendChild(childRow);
 
-        // --- 建立子行的子行區塊 ---
+        // **建立子行的子行區塊**
         let subchildRowWrapper = document.createElement("tr");
         subchildRowWrapper.id = `subchildSection-${idx}`;
         subchildRowWrapper.style.display = "none";
 
         let subchildCell = document.createElement("td");
-        subchildCell.colSpan = childHeaders.length;
+        subchildCell.colSpan = childHeaders.length + 1; // ✅ 確保對齊
         subchildCell.style.width = "100%";
 
-        // 建立內部子表格
+        // **建立內部子表格**
         let innerTable = document.createElement("table");
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
         innerTable.style.tableLayout = "fixed";
 
-        // ✅ 使用 colgroup 設定欄位寬度
+        // ✅ **使用 colgroup 設定欄位寬度**
         let colgroup = document.createElement("colgroup");
         ["5%", "15%", "10%", "15%", "15%", "20%", "10%", "10%"].forEach(width => {
             let col = document.createElement("col");
