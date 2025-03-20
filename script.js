@@ -895,7 +895,9 @@ taskRows.forEach((row, idx) => {
     
     // --- 建立標題列 ---
     let innerHeaderRow = document.createElement("tr");
-    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "", "主管意見", "", "處理紀錄"];
+        // const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+
     subchildHeaders.forEach((header, idx) => {
         let th = document.createElement("th");
         th.innerText = header;
