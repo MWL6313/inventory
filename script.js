@@ -397,66 +397,6 @@ function convertGoogleDriveLink(link) {
 // 全域變數用來存放待審核資料（API 回傳的陣列）
 let reviewDataGlobal = [];
 
-// 載入待審核資料
-// async function loadReviewData() {
-//     let role = localStorage.getItem("role");
-//     let department = localStorage.getItem("department");
-//     let account = localStorage.getItem("account"); // 登入帳號
-
-//     console.log("🔹[DEBUG] 取得主管審核資料", { role, department, account });
-
-//     if (!role || !department || !account) {
-//         console.error("🔴[ERROR] 角色、部門或帳號資訊缺失");
-//         return;
-//     }
-
-//     try {
-//         const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
-//             method: "POST",
-//             headers: { 
-//                 "Content-Type": "application/json",
-//                 "Authorization": localStorage.getItem("token")
-//             },
-//             body: JSON.stringify({ role, department }),
-//         });
-
-//         const data = await response.json();
-//         console.log("🟢[DEBUG] 取得審核資料回應", data);
-
-//         reviewDataGlobal = data;
-
-//         let select = document.getElementById("reviewList");
-//         select.innerHTML = "";
-
-//         if (data.length === 0) {
-//             select.innerHTML = `<option value="">目前沒有待審核的資料</option>`;
-//         } else {
-//             const taskNames = new Set();
-//             for (let i = 1; i < data.length; i++) {
-//                 taskNames.add(data[i][0]);
-//             }
-//             taskNames.forEach(taskName => {
-//                 let option = document.createElement("option");
-//                 option.value = taskName;
-//                 option.innerText = taskName;
-//                 select.appendChild(option);
-//             });
-//         }
-
-//         if (select.value !== "") {
-//             displayReviewDetails(select.value);
-//         }
-
-//         select.addEventListener("change", function() {
-//             if (this.value !== "") {
-//                 displayReviewDetails(this.value);
-//             }
-//         });
-
-//     } catch (error) {
-//         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
-//     }
-// }
 
 async function loadReviewData() {
     let role = localStorage.getItem("role");
@@ -608,14 +548,95 @@ function displayReviewDetails(taskName) {
     });
     childSection.appendChild(childHeaderRow);
 
-    taskRows.forEach((row, idx) => {
+    // taskRows.forEach((row, idx) => {
+    //     // 建立子行
+    //     let childRow = document.createElement("tr");
+    //     let childExpandTd = document.createElement("td");
+    //     let childExpandButton = document.createElement("button");
+    //     childExpandButton.innerText = "＋";
+    //     childExpandButton.onclick = () => {
+    //         // 取得子行的子行區塊
+    //         let subchildSection = document.getElementById(`subchildSection-${idx}`);
+    //         if (subchildSection) {
+    //             subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
+    //             childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
+    //         } else {
+    //             console.warn(`未找到子行的子行區塊：subchildSection-${idx}`);
+    //         }
+    //     };
+    //     childExpandTd.appendChild(childExpandButton);
+    //     childRow.appendChild(childExpandTd);
+
+    //     [1, 2, 3, 4, 5, 6, 7].forEach(i => {
+    //         let td = document.createElement("td");
+    //         td.innerText = row[i] || "";
+    //         td.style.border = "1px solid #ddd";
+    //         td.style.padding = "8px";
+    //         childRow.appendChild(td);
+    //     });
+    //     childSection.appendChild(childRow);
+
+    //     // --- 建立子行的子行區塊 ---
+    //     let subchildRowWrapper = document.createElement("tr");
+    //     subchildRowWrapper.id = `subchildSection-${idx}`;
+    //     subchildRowWrapper.style.display = "none";
+    //     let subchildCell = document.createElement("td");
+    //     subchildCell.colSpan = parentHeaders.length; // 覆蓋整個表格的欄數
+
+    //     // 建立內部子表格
+    //     let innerTable = document.createElement("table");
+    //     innerTable.style.width = "100%";
+    //     innerTable.style.borderCollapse = "collapse";
+    //     innerTable.style.tableLayout = "fixed";
+
+    //     // 建立 colgroup
+    //     let colgroup = document.createElement("colgroup");
+    //     subchildWidths.forEach(width => {
+    //         let col = document.createElement("col");
+    //         col.style.width = width;
+    //         colgroup.appendChild(col);
+    //     });
+    //     innerTable.appendChild(colgroup);
+
+    //     // 建立內部表頭列
+    //     let innerHeaderRow = document.createElement("tr");
+    //     subchildHeaders.forEach(text => {
+    //         let th = document.createElement("th");
+    //         th.innerText = text;
+    //         th.style.border = "1px solid #ddd";
+    //         th.style.padding = "8px";
+    //         innerHeaderRow.appendChild(th);
+    //     });
+    //     innerTable.appendChild(innerHeaderRow);
+
+    //     // 建立內部資料列 (這裡以 row 的資料對應索引 [14, 12, 13, 15, 18, 19, 20] 為例)
+    //     let innerDataRow = document.createElement("tr");
+    //     // 第一欄預留（對應內部表頭中的「展開」）
+    //     let emptyTd = document.createElement("td");
+    //     emptyTd.innerText = "";
+    //     innerDataRow.appendChild(emptyTd);
+    //     let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
+    //     subchildIndices.forEach(i => {
+    //         let td = document.createElement("td");
+    //         td.innerText = row[i] || "";
+    //         td.style.border = "1px solid #ddd";
+    //         td.style.padding = "8px";
+    //         innerDataRow.appendChild(td);
+    //     });
+    //     innerTable.appendChild(innerDataRow);
+
+    //     subchildCell.appendChild(innerTable);
+    //     subchildRowWrapper.appendChild(subchildCell);
+    //     childSection.appendChild(subchildRowWrapper);
+    // });
+
+ taskRows.forEach((row, idx) => {
         // 建立子行
         let childRow = document.createElement("tr");
         let childExpandTd = document.createElement("td");
         let childExpandButton = document.createElement("button");
         childExpandButton.innerText = "＋";
         childExpandButton.onclick = () => {
-            // 取得子行的子行區塊
             let subchildSection = document.getElementById(`subchildSection-${idx}`);
             if (subchildSection) {
                 subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
@@ -641,14 +662,16 @@ function displayReviewDetails(taskName) {
         subchildRowWrapper.id = `subchildSection-${idx}`;
         subchildRowWrapper.style.display = "none";
         let subchildCell = document.createElement("td");
-        subchildCell.colSpan = parentHeaders.length; // 覆蓋整個表格的欄數
-
+        // 使用 childHeaders 的數量作為 colSpan（childHeaders.length = 8）
+        subchildCell.colSpan = childHeaders.length;
+        subchildCell.style.width = "100%";
+        
         // 建立內部子表格
         let innerTable = document.createElement("table");
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
         innerTable.style.tableLayout = "fixed";
-
+        
         // 建立 colgroup
         let colgroup = document.createElement("colgroup");
         subchildWidths.forEach(width => {
@@ -657,7 +680,7 @@ function displayReviewDetails(taskName) {
             colgroup.appendChild(col);
         });
         innerTable.appendChild(colgroup);
-
+        
         // 建立內部表頭列
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
@@ -668,10 +691,10 @@ function displayReviewDetails(taskName) {
             innerHeaderRow.appendChild(th);
         });
         innerTable.appendChild(innerHeaderRow);
-
-        // 建立內部資料列 (這裡以 row 的資料對應索引 [14, 12, 13, 15, 18, 19, 20] 為例)
+        
+        // 建立內部資料列（以 row 中索引 [14,12,13,15,18,19,20] 的資料為例）
         let innerDataRow = document.createElement("tr");
-        // 第一欄預留（對應內部表頭中的「展開」）
+        // 第一欄預留，對應內部表頭中的「展開」
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
         innerDataRow.appendChild(emptyTd);
@@ -684,12 +707,12 @@ function displayReviewDetails(taskName) {
             innerDataRow.appendChild(td);
         });
         innerTable.appendChild(innerDataRow);
-
+        
         subchildCell.appendChild(innerTable);
         subchildRowWrapper.appendChild(subchildCell);
         childSection.appendChild(subchildRowWrapper);
     });
-
+    
     table.appendChild(childSection);
     container.appendChild(table);
 
