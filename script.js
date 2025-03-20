@@ -662,7 +662,7 @@ function displayReviewDetails(taskName) {
     // 定義表格欄位
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
     
     // ✅ 確保「複查照片連結」正確對應 O 欄（索引 14）
     const subchildIndices = [14, 12, 13, 15, 18, 19, 20];
@@ -767,6 +767,16 @@ function displayReviewDetails(taskName) {
         let innerTable = document.createElement("table");
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
+        innerTable.style.tableLayout = "fixed";
+
+        // ✅ 使用 colgroup 設定欄位寬度
+        let colgroup = document.createElement("colgroup");
+        ["5%", "15%", "10%", "15%", "15%", "20%", "10%", "10%"].forEach(width => {
+            let col = document.createElement("col");
+            col.style.width = width;
+            colgroup.appendChild(col);
+        });
+        innerTable.appendChild(colgroup);
 
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
@@ -780,21 +790,19 @@ function displayReviewDetails(taskName) {
 
         let innerDataRow = document.createElement("tr");
 
-        // ✅ **首欄留白，不影響展開按鈕**
+        // ✅ **第一欄留白**
         let emptyTd = document.createElement("td");
         emptyTd.innerText = "";
         innerDataRow.appendChild(emptyTd);
 
-        subchildHeaders.slice(1).forEach((_, i) => {
+        subchildIndices.forEach((i, idx) => {
             let td = document.createElement("td");
-            let value = row[subchildIndices[i]] || "";
-
-            if (i === 0) { // ✅ 若為「複查照片連結」
+            let value = row[i] || "";
+            if (idx === 0) {
                 td.innerHTML = createThumbnail(value);
             } else {
                 td.innerText = value;
             }
-
             td.style.border = "1px solid #ddd";
             td.style.padding = "8px";
             innerDataRow.appendChild(td);
@@ -809,6 +817,7 @@ function displayReviewDetails(taskName) {
     table.appendChild(childSection);
     container.appendChild(table);
 }
+
 
 
 async function submitReview(decision) {
