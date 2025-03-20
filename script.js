@@ -661,17 +661,18 @@ function displayReviewDetails(taskName) {
     let subchildRowWrapper = document.createElement("tr");
     subchildRowWrapper.id = `subchildSection-${idx}`;
     subchildRowWrapper.style.display = "none";
+
     let subchildCell = document.createElement("td");
-    // 設定 colSpan 為子行的實際 cell 數目（使用 childRow.cells.length）
-    subchildCell.colSpan = childRow.cells.length;
-    subchildCell.style.width = "100%";
-    
+    subchildCell.colSpan = childHeaders.length + 1;  // 確保它橫跨整個子行的寬度
+    subchildCell.style.padding = "0px";
+
     // 建立內部子表格
     let innerTable = document.createElement("table");
     innerTable.style.width = "100%";
     innerTable.style.borderCollapse = "collapse";
     innerTable.style.tableLayout = "fixed";
-    
+    innerTable.style.margin = "10px 0"; // 讓它與子行有適當間距
+
     // 建立 colgroup
     let colgroup = document.createElement("colgroup");
     subchildWidths.forEach(width => {
@@ -680,7 +681,7 @@ function displayReviewDetails(taskName) {
         colgroup.appendChild(col);
     });
     innerTable.appendChild(colgroup);
-    
+
     // 建立內部表頭列
     let innerHeaderRow = document.createElement("tr");
     subchildHeaders.forEach(text => {
@@ -688,16 +689,13 @@ function displayReviewDetails(taskName) {
         th.innerText = text;
         th.style.border = "1px solid #ddd";
         th.style.padding = "8px";
+        th.style.background = "#f4f4f4";  // 讓標題列有區隔
         innerHeaderRow.appendChild(th);
     });
     innerTable.appendChild(innerHeaderRow);
-    
-    // 建立內部資料列 (以 row 中索引 [14,12,13,15,18,19,20] 的資料為例)
+
+    // 建立內部資料列
     let innerDataRow = document.createElement("tr");
-    // 第一欄預留（對應內部表頭中的「展開」）
-    let emptyTd = document.createElement("td");
-    emptyTd.innerText = "";
-    innerDataRow.appendChild(emptyTd);
     let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
     subchildIndices.forEach(i => {
         let td = document.createElement("td");
@@ -707,11 +705,13 @@ function displayReviewDetails(taskName) {
         innerDataRow.appendChild(td);
     });
     innerTable.appendChild(innerDataRow);
-    
+
+    // **將內嵌表格放入子行的子行的 `<td>`**
     subchildCell.appendChild(innerTable);
     subchildRowWrapper.appendChild(subchildCell);
     childSection.appendChild(subchildRowWrapper);
 });
+
     
     table.appendChild(childSection);
     container.appendChild(table);
