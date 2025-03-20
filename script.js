@@ -631,87 +631,87 @@ function displayReviewDetails(taskName) {
     // });
 
  taskRows.forEach((row, idx) => {
-        // 建立子行
-        let childRow = document.createElement("tr");
-        let childExpandTd = document.createElement("td");
-        let childExpandButton = document.createElement("button");
-        childExpandButton.innerText = "＋";
-        childExpandButton.onclick = () => {
-            let subchildSection = document.getElementById(`subchildSection-${idx}`);
-            if (subchildSection) {
-                subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
-                childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
-            } else {
-                console.warn(`未找到子行的子行區塊：subchildSection-${idx}`);
-            }
-        };
-        childExpandTd.appendChild(childExpandButton);
-        childRow.appendChild(childExpandTd);
+    // 建立子行
+    let childRow = document.createElement("tr");
+    let childExpandTd = document.createElement("td");
+    let childExpandButton = document.createElement("button");
+    childExpandButton.innerText = "＋";
+    childExpandButton.onclick = () => {
+        let subchildSection = document.getElementById(`subchildSection-${idx}`);
+        if (subchildSection) {
+            subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
+            childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
+        } else {
+            console.warn(`未找到子行的子行區塊：subchildSection-${idx}`);
+        }
+    };
+    childExpandTd.appendChild(childExpandButton);
+    childRow.appendChild(childExpandTd);
 
-        [1, 2, 3, 4, 5, 6, 7].forEach(i => {
-            let td = document.createElement("td");
-            td.innerText = row[i] || "";
-            td.style.border = "1px solid #ddd";
-            td.style.padding = "8px";
-            childRow.appendChild(td);
-        });
-        childSection.appendChild(childRow);
-
-        // --- 建立子行的子行區塊 ---
-        let subchildRowWrapper = document.createElement("tr");
-        subchildRowWrapper.id = `subchildSection-${idx}`;
-        subchildRowWrapper.style.display = "none";
-        let subchildCell = document.createElement("td");
-        // 使用 childHeaders 的數量作為 colSpan（childHeaders.length = 8）
-        subchildCell.colSpan = childHeaders.length;
-        subchildCell.style.width = "100%";
-        
-        // 建立內部子表格
-        let innerTable = document.createElement("table");
-        innerTable.style.width = "100%";
-        innerTable.style.borderCollapse = "collapse";
-        innerTable.style.tableLayout = "fixed";
-        
-        // 建立 colgroup
-        let colgroup = document.createElement("colgroup");
-        subchildWidths.forEach(width => {
-            let col = document.createElement("col");
-            col.style.width = width;
-            colgroup.appendChild(col);
-        });
-        innerTable.appendChild(colgroup);
-        
-        // 建立內部表頭列
-        let innerHeaderRow = document.createElement("tr");
-        subchildHeaders.forEach(text => {
-            let th = document.createElement("th");
-            th.innerText = text;
-            th.style.border = "1px solid #ddd";
-            th.style.padding = "8px";
-            innerHeaderRow.appendChild(th);
-        });
-        innerTable.appendChild(innerHeaderRow);
-        
-        // 建立內部資料列（以 row 中索引 [14,12,13,15,18,19,20] 的資料為例）
-        let innerDataRow = document.createElement("tr");
-        // 第一欄預留，對應內部表頭中的「展開」
-        let emptyTd = document.createElement("td");
-        emptyTd.innerText = "";
-        innerDataRow.appendChild(emptyTd);
-        let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
-        subchildIndices.forEach(i => {
-            let td = document.createElement("td");
-            td.innerText = row[i] || "";
-            td.style.border = "1px solid #ddd";
-            td.style.padding = "8px";
-            innerDataRow.appendChild(td);
-        });
-        innerTable.appendChild(innerDataRow);
-        
-        subchildCell.appendChild(innerTable);
-        subchildRowWrapper.appendChild(subchildCell);
-        childSection.appendChild(subchildRowWrapper);
+    [1, 2, 3, 4, 5, 6, 7].forEach(i => {
+        let td = document.createElement("td");
+        td.innerText = row[i] || "";
+        td.style.border = "1px solid #ddd";
+        td.style.padding = "8px";
+        childRow.appendChild(td);
     });
+    childSection.appendChild(childRow);
+
+    // --- 建立子行的子行區塊 ---
+    let subchildRowWrapper = document.createElement("tr");
+    subchildRowWrapper.id = `subchildSection-${idx}`;
+    subchildRowWrapper.style.display = "none";
+    let subchildCell = document.createElement("td");
+    // 設定 colSpan 為子行的實際 cell 數目（使用 childRow.cells.length）
+    subchildCell.colSpan = childRow.cells.length;
+    subchildCell.style.width = "100%";
+    
+    // 建立內部子表格
+    let innerTable = document.createElement("table");
+    innerTable.style.width = "100%";
+    innerTable.style.borderCollapse = "collapse";
+    innerTable.style.tableLayout = "fixed";
+    
+    // 建立 colgroup
+    let colgroup = document.createElement("colgroup");
+    subchildWidths.forEach(width => {
+        let col = document.createElement("col");
+        col.style.width = width;
+        colgroup.appendChild(col);
+    });
+    innerTable.appendChild(colgroup);
+    
+    // 建立內部表頭列
+    let innerHeaderRow = document.createElement("tr");
+    subchildHeaders.forEach(text => {
+        let th = document.createElement("th");
+        th.innerText = text;
+        th.style.border = "1px solid #ddd";
+        th.style.padding = "8px";
+        innerHeaderRow.appendChild(th);
+    });
+    innerTable.appendChild(innerHeaderRow);
+    
+    // 建立內部資料列 (以 row 中索引 [14,12,13,15,18,19,20] 的資料為例)
+    let innerDataRow = document.createElement("tr");
+    // 第一欄預留（對應內部表頭中的「展開」）
+    let emptyTd = document.createElement("td");
+    emptyTd.innerText = "";
+    innerDataRow.appendChild(emptyTd);
+    let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
+    subchildIndices.forEach(i => {
+        let td = document.createElement("td");
+        td.innerText = row[i] || "";
+        td.style.border = "1px solid #ddd";
+        td.style.padding = "8px";
+        innerDataRow.appendChild(td);
+    });
+    innerTable.appendChild(innerDataRow);
+    
+    subchildCell.appendChild(innerTable);
+    subchildRowWrapper.appendChild(subchildCell);
+    childSection.appendChild(subchildRowWrapper);
+});
     
     table.appendChild(childSection);
     container.appendChild(table);
