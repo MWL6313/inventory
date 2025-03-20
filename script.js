@@ -662,8 +662,10 @@ function displayReviewDetails(taskName) {
     // 定義表格欄位
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-    const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
-    const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    
+    // ✅ 確保「複查照片連結」正確對應 O 欄（索引 14）
+    const subchildIndices = [14, 12, 13, 15, 18, 19, 20];
 
     const container = document.getElementById("reviewDetails");
     container.innerHTML = "";
@@ -671,7 +673,6 @@ function displayReviewDetails(taskName) {
     const table = document.createElement("table");
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
-    table.style.tableLayout = "fixed";
 
     // 父行標題
     let parentHeaderRow = document.createElement("tr");
@@ -732,7 +733,6 @@ function displayReviewDetails(taskName) {
 
     // 遍歷過濾後的任務行
     filteredRows.forEach((row, idx) => {
-        // 建立子行
         let childRow = document.createElement("tr");
         let childExpandTd = document.createElement("td");
         let childExpandButton = document.createElement("button");
@@ -768,14 +768,6 @@ function displayReviewDetails(taskName) {
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
 
-        let colgroup = document.createElement("colgroup");
-        subchildWidths.forEach(width => {
-            let col = document.createElement("col");
-            col.style.width = width;
-            colgroup.appendChild(col);
-        });
-        innerTable.appendChild(colgroup);
-
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
             let th = document.createElement("th");
@@ -787,15 +779,28 @@ function displayReviewDetails(taskName) {
         innerTable.appendChild(innerHeaderRow);
 
         let innerDataRow = document.createElement("tr");
-        subchildHeaders.forEach((_, i) => {
+
+        // ✅ **首欄留白，不影響展開按鈕**
+        let emptyTd = document.createElement("td");
+        emptyTd.innerText = "";
+        innerDataRow.appendChild(emptyTd);
+
+        subchildHeaders.slice(1).forEach((_, i) => {
             let td = document.createElement("td");
-            td.innerText = row[[14, 12, 13, 15, 18, 19, 20][i]] || "";
+            let value = row[subchildIndices[i]] || "";
+
+            if (i === 0) { // ✅ 若為「複查照片連結」
+                td.innerHTML = createThumbnail(value);
+            } else {
+                td.innerText = value;
+            }
+
             td.style.border = "1px solid #ddd";
             td.style.padding = "8px";
             innerDataRow.appendChild(td);
         });
-        innerTable.appendChild(innerDataRow);
 
+        innerTable.appendChild(innerDataRow);
         subchildCell.appendChild(innerTable);
         subchildRowWrapper.appendChild(subchildCell);
         childSection.appendChild(subchildRowWrapper);
