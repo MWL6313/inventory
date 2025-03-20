@@ -395,8 +395,254 @@ function convertGoogleDriveLink(link) {
   1. 取得待審核資料，並填入下拉選單
 -------------------------------------------*/
 // 全域變數用來存放待審核資料（API 回傳的陣列）
-let reviewDataGlobal = [];
+// let reviewDataGlobal = [];
 
+
+// async function loadReviewData() {
+//     let role = localStorage.getItem("role");
+//     let department = localStorage.getItem("department");
+//     let account = localStorage.getItem("account"); // 登入帳號
+
+//     console.log("🔹[DEBUG] 取得主管審核資料", { role, department, account });
+
+//     if (!role || !department || !account) {
+//         console.error("🔴[ERROR] 角色、部門或帳號資訊缺失");
+//         return;
+//     }
+
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/pending-reviews`, {
+//             method: "POST",
+//             headers: { 
+//                 "Content-Type": "application/json",
+//                 "Authorization": localStorage.getItem("token")
+//             },
+//             body: JSON.stringify({ role, department }),
+//         });
+
+//         const data = await response.json();
+//         console.log("🟢[DEBUG] 取得審核資料回應", data);
+
+//         // 若後端回傳 success 為 false，顯示訊息於下拉選單及詳細區塊，然後結束
+//         if (data.success === false) {
+//             let select = document.getElementById("reviewList");
+//             select.innerHTML = `<option value="">${data.message}</option>`;
+//             document.getElementById("reviewDetails").innerHTML = `<p>${data.message}</p>`;
+//             return;
+//         }
+
+//         // 將資料存入全域變數
+//         reviewDataGlobal = data;
+
+//         let select = document.getElementById("reviewList");
+//         select.innerHTML = "";
+
+//         if (data.length === 0) {
+//             select.innerHTML = `<option value="">目前沒有待審核的資料</option>`;
+//         } else {
+//             const taskNames = new Set();
+//             for (let i = 1; i < data.length; i++) {
+//                 taskNames.add(data[i][0]);
+//             }
+//             taskNames.forEach(taskName => {
+//                 let option = document.createElement("option");
+//                 option.value = taskName;
+//                 option.innerText = taskName;
+//                 select.appendChild(option);
+//             });
+//         }
+
+//         if (select.value !== "") {
+//             displayReviewDetails(select.value);
+//         }
+
+//         select.addEventListener("change", function() {
+//             if (this.value !== "") {
+//                 displayReviewDetails(this.value);
+//             }
+//         });
+
+//     } catch (error) {
+//         console.error("🔴[ERROR] 主管審核資料載入錯誤：", error);
+//     }
+// }
+
+
+// // 顯示任務詳細資料 (同時自動填入隱藏欄位)
+// // 顯示任務詳細資料 (同時自動填入隱藏欄位)
+// function displayReviewDetails(taskName) {
+//     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
+
+//     const taskRows = reviewDataGlobal.slice(1).filter(row => row[0] === taskName);
+//     if (taskRows.length === 0) return;
+
+//     // 定義表格欄位
+//     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
+//     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
+//     const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+//     const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
+
+//     const container = document.getElementById("reviewDetails");
+//     container.innerHTML = "";
+
+//     const table = document.createElement("table");
+//     table.style.width = "100%";
+//     table.style.borderCollapse = "collapse";
+//     table.style.tableLayout = "fixed";
+
+//     // 父行標題
+//     let parentHeaderRow = document.createElement("tr");
+//     parentHeaders.forEach(text => {
+//         let th = document.createElement("th");
+//         th.innerText = text;
+//         th.style.border = "1px solid #ddd";
+//         th.style.padding = "8px";
+//         parentHeaderRow.appendChild(th);
+//     });
+//     table.appendChild(parentHeaderRow);
+
+//     // 父行資料
+//     let parentRow = document.createElement("tr");
+//     let expandTd = document.createElement("td");
+//     let parentExpandButton = document.createElement("button");
+//     parentExpandButton.innerText = "＋";
+//     parentExpandButton.classList.add("expand-btn");
+//     parentExpandButton.onclick = function () {
+//         let childSection = document.getElementById("childSection");
+//         childSection.style.display = childSection.style.display === "none" ? "table-row-group" : "none";
+//         parentExpandButton.innerText = childSection.style.display === "none" ? "＋" : "－";
+//     };
+//     expandTd.appendChild(parentExpandButton);
+//     parentRow.appendChild(expandTd);
+
+//     let parentValues = [
+//         taskRows[0][0],
+//         taskRows[0][10],
+//         taskRows[0][11],
+//         taskRows[0][9],
+//         taskRows[0][21],
+//         createThumbnail(taskRows[0][8]),
+//         taskRows[0][22] ? `<a href="${taskRows[0][22]}" target="_blank">報表位置</a>` : ""
+//     ];
+//     parentValues.forEach(value => {
+//         let td = document.createElement("td");
+//         td.innerHTML = value;
+//         td.style.border = "1px solid #ddd";
+//         td.style.padding = "8px";
+//         parentRow.appendChild(td);
+//     });
+//     table.appendChild(parentRow);
+
+//     // 子行區段
+//     let childSection = document.createElement("tbody");
+//     childSection.id = "childSection";
+//     childSection.style.display = "none";
+
+//     let childHeaderRow = document.createElement("tr");
+//     childHeaders.forEach(text => {
+//         let th = document.createElement("th");
+//         th.innerText = text;
+//         th.style.border = "1px solid #ddd";
+//         th.style.padding = "8px";
+//         childHeaderRow.appendChild(th);
+//     });
+//     childSection.appendChild(childHeaderRow);
+
+//     taskRows.forEach((row, idx) => {
+//         // 建立子行
+//         let childRow = document.createElement("tr");
+//         let childExpandTd = document.createElement("td");
+//         let childExpandButton = document.createElement("button");
+//         childExpandButton.innerText = "＋";
+//         childExpandButton.onclick = () => {
+//             // 取得子行的子行區塊
+//             let subchildSection = document.getElementById(`subchildSection-${idx}`);
+//             if (subchildSection) {
+//                 subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
+//                 childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
+//             } else {
+//                 console.warn(`未找到子行的子行區塊：subchildSection-${idx}`);
+//             }
+//         };
+//         childExpandTd.appendChild(childExpandButton);
+//         childRow.appendChild(childExpandTd);
+
+//         [1, 2, 3, 4, 5, 6, 7].forEach(i => {
+//             let td = document.createElement("td");
+//             td.innerText = row[i] || "";
+//             td.style.border = "1px solid #ddd";
+//             td.style.padding = "8px";
+//             childRow.appendChild(td);
+//         });
+//         childSection.appendChild(childRow);
+
+//         // --- 建立子行的子行區塊 ---
+//         let subchildRowWrapper = document.createElement("tr");
+//         subchildRowWrapper.id = `subchildSection-${idx}`;
+//         subchildRowWrapper.style.display = "none";
+//         let subchildCell = document.createElement("td");
+//         subchildCell.colSpan = parentHeaders.length; // 覆蓋整個表格的欄數
+
+//         // 建立內部子表格
+//         let innerTable = document.createElement("table");
+//         innerTable.style.width = "100%";
+//         innerTable.style.borderCollapse = "collapse";
+//         innerTable.style.tableLayout = "fixed";
+
+//         // 建立 colgroup
+//         let colgroup = document.createElement("colgroup");
+//         subchildWidths.forEach(width => {
+//             let col = document.createElement("col");
+//             col.style.width = width;
+//             colgroup.appendChild(col);
+//         });
+//         innerTable.appendChild(colgroup);
+
+//         // 建立內部表頭列
+//         let innerHeaderRow = document.createElement("tr");
+//         subchildHeaders.forEach(text => {
+//             let th = document.createElement("th");
+//             th.innerText = text;
+//             th.style.border = "1px solid #ddd";
+//             th.style.padding = "8px";
+//             innerHeaderRow.appendChild(th);
+//         });
+//         innerTable.appendChild(innerHeaderRow);
+
+//         // 建立內部資料列 (這裡以 row 的資料對應索引 [14, 12, 13, 15, 18, 19, 20] 為例)
+//         let innerDataRow = document.createElement("tr");
+//         // 第一欄預留（對應內部表頭中的「展開」）
+//         let emptyTd = document.createElement("td");
+//         emptyTd.innerText = "";
+//         innerDataRow.appendChild(emptyTd);
+//         let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
+//         subchildIndices.forEach(i => {
+//             let td = document.createElement("td");
+//             td.innerText = row[i] || "";
+//             td.style.border = "1px solid #ddd";
+//             td.style.padding = "8px";
+//             innerDataRow.appendChild(td);
+//         });
+//         innerTable.appendChild(innerDataRow);
+
+//         subchildCell.appendChild(innerTable);
+//         subchildRowWrapper.appendChild(subchildCell);
+//         childSection.appendChild(subchildRowWrapper);
+//     });
+
+    
+//     table.appendChild(childSection);
+//     container.appendChild(table);
+
+//     // 自動設定隱藏欄位
+//     document.getElementById("responsible").value = taskRows[0][9];  // 負責人 (J欄)
+//     document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
+//     document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
+//     document.getElementById("account").value = localStorage.getItem("account") || "";
+// }
+
+
+let reviewDataGlobal = [];
 
 async function loadReviewData() {
     let role = localStorage.getItem("role");
@@ -423,7 +669,6 @@ async function loadReviewData() {
         const data = await response.json();
         console.log("🟢[DEBUG] 取得審核資料回應", data);
 
-        // 若後端回傳 success 為 false，顯示訊息於下拉選單及詳細區塊，然後結束
         if (data.success === false) {
             let select = document.getElementById("reviewList");
             select.innerHTML = `<option value="">${data.message}</option>`;
@@ -431,7 +676,6 @@ async function loadReviewData() {
             return;
         }
 
-        // 將資料存入全域變數
         reviewDataGlobal = data;
 
         let select = document.getElementById("reviewList");
@@ -467,19 +711,15 @@ async function loadReviewData() {
     }
 }
 
-
-// 顯示任務詳細資料 (同時自動填入隱藏欄位)
-// 顯示任務詳細資料 (同時自動填入隱藏欄位)
 function displayReviewDetails(taskName) {
     if (!reviewDataGlobal || reviewDataGlobal.length === 0) return;
 
     const taskRows = reviewDataGlobal.slice(1).filter(row => row[0] === taskName);
     if (taskRows.length === 0) return;
 
-    // 定義表格欄位
     const parentHeaders = ["展開", "任務名稱", "到點感應時間", "上傳時間", "負責人", "部門", "照片連結", "資料夾位置"];
     const childHeaders = ["展開", "點位或項次", "項目", "單位", "儲備量", "盤點量", "狀態", "備註"];
-    const subchildHeaders = ["展開", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
+    const subchildHeaders = ["", "複查照片連結", "處理狀態", "複查情形", "複查時間", "主管意見", "確認時間", "處理紀錄"];
     const subchildWidths = ["5%", "10%", "10%", "10%", "10%", "10%", "10%", "35%"];
 
     const container = document.getElementById("reviewDetails");
@@ -488,9 +728,7 @@ function displayReviewDetails(taskName) {
     const table = document.createElement("table");
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
-    table.style.tableLayout = "fixed";
 
-    // 父行標題
     let parentHeaderRow = document.createElement("tr");
     parentHeaders.forEach(text => {
         let th = document.createElement("th");
@@ -501,12 +739,10 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentHeaderRow);
 
-    // 父行資料
     let parentRow = document.createElement("tr");
     let expandTd = document.createElement("td");
     let parentExpandButton = document.createElement("button");
     parentExpandButton.innerText = "＋";
-    parentExpandButton.classList.add("expand-btn");
     parentExpandButton.onclick = function () {
         let childSection = document.getElementById("childSection");
         childSection.style.display = childSection.style.display === "none" ? "table-row-group" : "none";
@@ -533,7 +769,6 @@ function displayReviewDetails(taskName) {
     });
     table.appendChild(parentRow);
 
-    // 子行區段
     let childSection = document.createElement("tbody");
     childSection.id = "childSection";
     childSection.style.display = "none";
@@ -549,20 +784,14 @@ function displayReviewDetails(taskName) {
     childSection.appendChild(childHeaderRow);
 
     taskRows.forEach((row, idx) => {
-        // 建立子行
         let childRow = document.createElement("tr");
         let childExpandTd = document.createElement("td");
         let childExpandButton = document.createElement("button");
         childExpandButton.innerText = "＋";
         childExpandButton.onclick = () => {
-            // 取得子行的子行區塊
             let subchildSection = document.getElementById(`subchildSection-${idx}`);
-            if (subchildSection) {
-                subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
-                childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
-            } else {
-                console.warn(`未找到子行的子行區塊：subchildSection-${idx}`);
-            }
+            subchildSection.style.display = subchildSection.style.display === "none" ? "table-row-group" : "none";
+            childExpandButton.innerText = subchildSection.style.display === "none" ? "＋" : "－";
         };
         childExpandTd.appendChild(childExpandButton);
         childRow.appendChild(childExpandTd);
@@ -576,29 +805,16 @@ function displayReviewDetails(taskName) {
         });
         childSection.appendChild(childRow);
 
-        // --- 建立子行的子行區塊 ---
         let subchildRowWrapper = document.createElement("tr");
         subchildRowWrapper.id = `subchildSection-${idx}`;
         subchildRowWrapper.style.display = "none";
         let subchildCell = document.createElement("td");
-        subchildCell.colSpan = parentHeaders.length; // 覆蓋整個表格的欄數
-
-        // 建立內部子表格
+        subchildCell.colSpan = childHeaders.length;
+        
         let innerTable = document.createElement("table");
         innerTable.style.width = "100%";
         innerTable.style.borderCollapse = "collapse";
-        innerTable.style.tableLayout = "fixed";
 
-        // 建立 colgroup
-        let colgroup = document.createElement("colgroup");
-        subchildWidths.forEach(width => {
-            let col = document.createElement("col");
-            col.style.width = width;
-            colgroup.appendChild(col);
-        });
-        innerTable.appendChild(colgroup);
-
-        // 建立內部表頭列
         let innerHeaderRow = document.createElement("tr");
         subchildHeaders.forEach(text => {
             let th = document.createElement("th");
@@ -609,32 +825,15 @@ function displayReviewDetails(taskName) {
         });
         innerTable.appendChild(innerHeaderRow);
 
-        // 建立內部資料列 (這裡以 row 的資料對應索引 [14, 12, 13, 15, 18, 19, 20] 為例)
-        let innerDataRow = document.createElement("tr");
-        // 第一欄預留（對應內部表頭中的「展開」）
-        let emptyTd = document.createElement("td");
-        emptyTd.innerText = "";
-        innerDataRow.appendChild(emptyTd);
-        let subchildIndices = [14, 12, 13, 15, 18, 19, 20];
-        subchildIndices.forEach(i => {
-            let td = document.createElement("td");
-            td.innerText = row[i] || "";
-            td.style.border = "1px solid #ddd";
-            td.style.padding = "8px";
-            innerDataRow.appendChild(td);
-        });
-        innerTable.appendChild(innerDataRow);
-
         subchildCell.appendChild(innerTable);
         subchildRowWrapper.appendChild(subchildCell);
         childSection.appendChild(subchildRowWrapper);
     });
 
-    
     table.appendChild(childSection);
     container.appendChild(table);
 
-    // 自動設定隱藏欄位
+    //     // 自動設定隱藏欄位
     document.getElementById("responsible").value = taskRows[0][9];  // 負責人 (J欄)
     document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
     document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
