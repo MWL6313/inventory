@@ -815,7 +815,7 @@ function displayReviewDetails(taskName) {
     document.getElementById("project").value = taskRows[0][2];      // 項目 (C欄)
     document.getElementById("uploadTime").value = taskRows[0][11];  // 上傳時間 (L欄)
     document.getElementById("account").value = localStorage.getItem("account") || "";
-}
+
 
 
 async function submitReview(decision) {
