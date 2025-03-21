@@ -6,12 +6,11 @@
 }
 
 body {
-  font-family: 'Noto Serif TC', serif;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-  background: linear-gradient(to bottom right, #3e2c24, #594d43); /* 沉穩日式木色背景 */
-  color: #fdfaf5;
+    font-family: 'Noto Serif TC', serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: linear-gradient(to bottom, #5d4037, #a1887f);
 }
 
 /* 右上角使用者資訊樣式 */
@@ -58,6 +57,7 @@ nav a:hover {
 
 /* 主要容器 */
 .container {
+    background: rgba(255, 250, 245, 0.92); /* 微透明米色 */
     max-width: 1200px;
     margin: 50px auto;
     background: #fffdfa;
