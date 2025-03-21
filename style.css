@@ -6,12 +6,16 @@
 }
 
 body {
-    font-family: 'Noto Serif TC', serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    background: linear-gradient(to bottom, #fefae0, #e6dcc9);
+  font-family: 'Noto Serif TC', serif;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  background: linear-gradient(to bottom, #fefae0, #e6dcc9);
+  background-attachment: fixed; /* 讓背景不會因滾動產生多個區塊 */
+  background-repeat: no-repeat;
+  background-size: cover;
 }
+
 
 /* 右上角使用者資訊樣式 */
 #userInfo {
