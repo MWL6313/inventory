@@ -1,38 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500&display=swap');
+
+/* 基本樣式統一 */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif TC', serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: linear-gradient(to bottom right, #fceabb, #f8b500);
+}
+
 /* 右上角使用者資訊樣式 */
 #userInfo {
     position: fixed;
     top: 10px;
     right: 10px;
-    background-color: #f0f0f0;
-    padding: 10px 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    background-color: #fffaf5;
+    padding: 12px 18px;
+    border: 2px solid #b03a2e;
+    border-radius: 12px;
     text-align: left;
     font-size: 16px;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+    color: #333;
 }
 
-/* 右上角各元素排列 */
 #userInfo span,
 #userInfo div {
     display: block;
     margin-bottom: 5px;
 }
 
-
-
-/* 全局樣式 */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    background-color: #f4f4f4;
-}
-
 /* 導覽列 */
 nav {
-    background-color: #007BFF;
+    background-color: #b03a2e;
     padding: 15px;
     text-align: center;
 }
@@ -51,52 +55,60 @@ nav a:hover {
     color: #ffdd57;
 }
 
-/* 主要區塊 */
+/* 主要容器 */
 .container {
     max-width: 1200px;
     margin: 50px auto;
-    background: white;
+    background: #fffdfa;
     padding: 30px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    border: 3px solid #b03a2e;
 }
 
-/* 表單樣式 */
+/* 表單元素 */
 input, button, select {
     width: 95%;
-    padding: 12px;
+    padding: 14px;
     margin: 15px 0;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #ccc;
     font-size: 18px;
     transition: all 0.3s ease;
+    font-family: 'Noto Serif TC', serif;
 }
 
-/* 按鈕美化 */
+input:focus, select:focus {
+    border-color: #b03a2e;
+    outline: none;
+}
+
+/* 按鈕樣式 */
 button {
-    background: linear-gradient(to right, #28a745, #218838);
+    background: linear-gradient(to right, #b03a2e, #873600);
     color: white;
     cursor: pointer;
     font-size: 18px;
     font-weight: bold;
     border: none;
-    padding: 12px 15px;
-    border-radius: 8px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
+    padding: 14px 16px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
 }
 
 button:hover {
-    background: linear-gradient(to right, #218838, #1e7e34);
+    background: linear-gradient(to right, #a93226, #641e16);
     transform: scale(1.05);
 }
 
-/* 美化表格 */
+/* 表格樣式 */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 25px;
     background: white;
+    font-family: 'Noto Serif TC', serif;
 }
 
 table, th, td {
@@ -104,20 +116,31 @@ table, th, td {
 }
 
 th, td {
-    padding: 15px;
+    padding: 16px;
     text-align: center;
     font-size: 18px;
 }
 
 th {
-    background: linear-gradient(to right, #007BFF, #0056b3);
+    background: linear-gradient(to right, #b03a2e, #873600);
     color: white;
     font-size: 20px;
 }
 
-/* 按鈕 - 展開收起 */
+/* 子表格樣式 */
+.detail-table th {
+    background: #fdf4ec;
+    color: #222;
+    font-size: 16px;
+}
+
+.detail-table td {
+    font-size: 16px;
+}
+
+/* 展開按鈕 */
 .expand-btn {
-    background: #007bff;
+    background: #b03a2e;
     color: white;
     border: none;
     font-size: 16px;
@@ -133,25 +156,8 @@ th {
 }
 
 .expand-btn:hover {
-    background: #0056b3;
+    background: #873600;
     transform: scale(1.1);
-}
-
-/* 子表格樣式 */
-.detail-table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
-}
-
-.detail-table th {
-    background: #f8f9fa;
-    color: black;
-    font-size: 16px;
-}
-
-.detail-table td {
-    font-size: 16px;
 }
 
 /* 響應式設計 */
@@ -209,4 +215,3 @@ th {
         font-size: 12px;
     }
 }
-
