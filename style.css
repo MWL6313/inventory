@@ -15,65 +15,64 @@ body {
 
 /* 右上角使用者資訊樣式 */
 #userInfo {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: #fffaf5;
-    padding: 12px 18px;
-    border: 2px solid #b03a2e;
-    border-radius: 12px;
-    text-align: left;
-    font-size: 16px;
-    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
-    color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  color: #fdfaf5;
+  font-size: 14px;
 }
 
-#userInfo span,
-#userInfo div {
-    display: block;
-    margin-bottom: 5px;
+#userInfo button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #ff5555;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
+
+#userInfo button:hover {
+  background-color: #cc0000;
+}
+
 
 /* 導覽列 */
 nav {
   background: linear-gradient(to right, #5c1f14, #8e2c24);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 30px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.nav-center {
-  max-width: 1000px;
-  margin: 0 auto;
-  text-align: center;
-}
-
 .logo {
-  display: block;
   font-size: 24px;
   font-weight: bold;
   color: #fdfaf5;
   font-family: 'Noto Serif TC', serif;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
 }
 
 .nav-links {
   display: flex;
-  justify-content: center;
+  gap: 20px;
 }
-
 
 .nav-links a {
   color: #fdfaf5;
   text-decoration: none;
-  margin: 0 15px;
   font-size: 18px;
   font-weight: 500;
-  transition: all 0.3s ease;
   padding-bottom: 2px;
   border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
 .nav-links a:hover {
