@@ -16,11 +16,17 @@ body {
 /* 右上角使用者資訊樣式 */
 #userInfo {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
+  align-items: center;
+  gap: 12px;
   color: #fdfaf5;
   font-size: 14px;
+  flex-shrink: 0; /* 避免壓縮 */
+}
+
+#userInfo span,
+#userInfo div {
+  margin: 0;
+  padding: 0;
 }
 
 #userInfo button {
@@ -32,11 +38,13 @@ body {
   color: white;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
 }
 
 #userInfo button:hover {
   background-color: #cc0000;
 }
+
 
 
 /* 導覽列 */
