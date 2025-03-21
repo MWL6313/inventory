@@ -973,26 +973,49 @@ async function submitReview(decision) {
     document.getElementById("submitBtn").disabled = true;
     document.getElementById("spinner").style.display = 'block';
 
+    // try {
+    //     const res = await fetch(`${API_BASE_URL}/approve`, {
+    //         method: "POST",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify({
+    //             taskName, 
+    //             decision, 
+    //             comment, 
+    //             role: localStorage.getItem("role"), 
+    //             account, 
+    //             responsible, 
+    //             project, 
+    //             uploadTime
+    //         }),
+    //     });
+    //     const data = await res.json();
+    //     alert(data.success ? `成功：${data.newStatus}` : `失敗：${data.message}`);
+    //     if (data.success) location.reload();
+    // } catch (e) {
+    //     alert("系統錯誤，稍後再試！");
     try {
-        const res = await fetch(`${API_BASE_URL}/approve`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                taskName, 
-                decision, 
-                comment, 
-                role: localStorage.getItem("role"), 
-                account, 
-                responsible, 
-                project, 
-                uploadTime
-            }),
-        });
-        const data = await res.json();
-        alert(data.success ? `成功：${data.newStatus}` : `失敗：${data.message}`);
-        if (data.success) location.reload();
+    const res = await fetch(`${API_BASE_URL}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            taskName,
+            decision,
+            comment,
+            role: localStorage.getItem("role"),
+            account,
+            responsible,
+            project,
+            uploadTime
+        }),
+    });
+    const data = await res.json();
+    console.log("🟢 Approve API 回傳結果：", data);  // 加上這行！！
+    alert(data.success ? `成功：${data.newStatus}` : `失敗：${data.message || data.error}`);
+    if (data.success) location.reload();
     } catch (e) {
+        console.error("🔴 Approve API 發生例外：", e);
         alert("系統錯誤，稍後再試！");
+
     } finally {
         document.getElementById("submitBtn").disabled = false;
         document.getElementById("spinner").style.display = 'none';
