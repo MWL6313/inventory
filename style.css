@@ -36,40 +36,51 @@ body {
 
 /* 導覽列 */
 nav {
-    background: linear-gradient(to right, #5c1f14, #8e2c24);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 30px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  background: linear-gradient(to right, #5c1f14, #8e2c24);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-nav .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #fdfaf5;
-    font-family: 'Noto Serif TC', serif;
-    letter-spacing: 1px;
+.nav-center {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-nav .nav-links a {
-    color: #fdfaf5;
-    text-decoration: none;
-    margin: 0 15px;
-    font-size: 18px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    padding-bottom: 2px;
-    border-bottom: 2px solid transparent;
+.logo {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fdfaf5;
+  font-family: 'Noto Serif TC', serif;
+  margin-bottom: 8px;
 }
 
-nav .nav-links a:hover {
-    border-bottom: 2px solid #ffdd57;
-    color: #ffdd57;
+.nav-links {
+  display: flex;
+  justify-content: center;
 }
+
+
+.nav-links a {
+  color: #fdfaf5;
+  text-decoration: none;
+  margin: 0 15px;
+  font-size: 18px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-links a:hover {
+  border-bottom: 2px solid #ffdd57;
+  color: #ffdd57;
+}
+
 
 
 /* 主要容器 */
