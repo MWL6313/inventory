@@ -39,7 +39,51 @@ async function login() {
     }
 }
 
+// ✅ 註冊功能
+const registerForm = document.getElementById("register-form");
+registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
+    const account = registerForm.regAccount.value.trim();
+    const password = registerForm.regPassword.value.trim();
+    const department = registerForm.regDepartment.value;
+    const email = registerForm.regEmail.value.trim();
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ account, password, department, email }),
+        });
+        const data = await response.json();
+        document.getElementById("registerMessage").innerText = data.message || (data.success ? "註冊成功" : "註冊失敗");
+    } catch (error) {
+        console.error("🔴 註冊錯誤:", error);
+        document.getElementById("registerMessage").innerText = "系統錯誤，請稍後再試";
+    }
+});
+
+// ✅ 忘記密碼功能
+const forgotForm = document.getElementById("forgot-form");
+forgotForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const account = forgotForm.forgotAccount.value.trim();
+    const email = forgotForm.forgotEmail.value.trim();
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ account, email }),
+        });
+        const data = await response.json();
+        document.getElementById("forgotMessage").innerText = data.message || (data.success ? "密碼已寄出，請查收 Email" : "查詢失敗");
+    } catch (error) {
+        console.error("🔴 查詢密碼錯誤:", error);
+        document.getElementById("forgotMessage").innerText = "系統錯誤，請稍後再試";
+    }
+});
 
 // 設定閒置超時時間：30 分鐘（以毫秒計算）
 document.addEventListener("DOMContentLoaded", function() {
