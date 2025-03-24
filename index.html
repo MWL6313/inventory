@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
     <script src="script.js" defer></script>
+    <style>
+      .section-toggle { cursor: pointer; color: #b03a2e; font-weight: bold; margin-top: 20px; }
+      .toggle-section { display: none; }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -20,38 +24,47 @@
 
         <hr>
 
-        <!-- 註冊區塊 -->
-        <h3>註冊帳號</h3>
-        <form id="register-form">
-            <input type="text" name="regAccount" placeholder="帳號（2~4 中文字）" required><br>
-            <input type="password" name="regPassword" placeholder="密碼" required><br>
-            <select name="regDepartment" required>
-                <option value="">請選擇部門</option>
-                <option value="營一處">營一處</option>
-                <option value="營二處">營二處</option>
-                <option value="營三處">營三處</option>
-                <option value="營四處台中站">營四處台中站</option>
-                <option value="營四處新港站">營四處新港站</option>
-                <option value="中區保養廠梧棲">中區保養廠梧棲</option>
-                <option value="其他">其他</option>
-            </select><br>
-            <input type="email" name="regEmail" placeholder="Email" required><br>
-            <button type="submit">註冊</button>
-            <p id="registerMessage"></p>
-        </form>
+        <!-- 展開註冊表單 -->
+        <div class="section-toggle" onclick="toggleSection('register-section')">▶ 註冊帳號</div>
+        <div id="register-section" class="toggle-section">
+            <form id="register-form">
+                <input type="text" name="regAccount" placeholder="帳號（2~4 中文字）" required><br>
+                <input type="password" name="regPassword" placeholder="密碼" required><br>
+                <select name="regDepartment" required>
+                    <option value="">請選擇部門</option>
+                    <option value="營一處">營一處</option>
+                    <option value="營二處">營二處</option>
+                    <option value="營三處">營三處</option>
+                    <option value="營四處台中站">營四處台中站</option>
+                    <option value="營四處新港站">營四處新港站</option>
+                    <option value="中區保養廠梧棲">中區保養廠梧棲</option>
+                    <option value="其他">其他</option>
+                </select><br>
+                <input type="email" name="regEmail" placeholder="Email" required><br>
+                <button type="submit">註冊</button>
+                <p id="registerMessage"></p>
+            </form>
+        </div>
 
         <hr>
 
-        <!-- 忘記密碼區塊 -->
-        <h3>查詢密碼</h3>
-        <form id="forgot-form">
-            <input type="text" name="forgotAccount" placeholder="帳號" required><br>
-            <input type="email" name="forgotEmail" placeholder="Email" required><br>
-            <button type="submit">寄送密碼到信箱</button>
-            <p id="forgotMessage"></p>
-        </form>
-
+        <!-- 展開忘記密碼表單 -->
+        <div class="section-toggle" onclick="toggleSection('forgot-section')">▶ 忘記密碼</div>
+        <div id="forgot-section" class="toggle-section">
+            <form id="forgot-form">
+                <input type="text" name="forgotAccount" placeholder="帳號" required><br>
+                <input type="email" name="forgotEmail" placeholder="Email" required><br>
+                <button type="submit">寄送密碼到信箱</button>
+                <p id="forgotMessage"></p>
+            </form>
+        </div>
     </div>
+
+    <script>
+      function toggleSection(id) {
+        const section = document.getElementById(id);
+        section.style.display = section.style.display === "none" || section.style.display === "" ? "block" : "none";
+      }
+    </script>
 </body>
 </html>
-
