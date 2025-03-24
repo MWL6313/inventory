@@ -2,19 +2,56 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>登入</title>
+    <title>登入 / 註冊</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://github.githubassets.com/favicons/favicon.png">
-    <!-- 使用 defer 屬性確保 script 在 DOM 載入後執行 -->
     <script src="script.js" defer></script>
 </head>
 <body>
     <div class="container">
-        <h2>台塑貨運盤點巡檢系統<br>帳號登入</h2>
+        <h2>台塑貨運盤點巡檢系統</h2>
+
+        <!-- 登入區塊 -->
+        <h3>帳號登入</h3>
         <input type="text" id="account" placeholder="輸入帳號">
         <input type="password" id="password" placeholder="輸入密碼">
         <button onclick="login()">登入</button>
         <p id="message"></p>
+
+        <hr>
+
+        <!-- 註冊區塊 -->
+        <h3>註冊帳號</h3>
+        <form id="register-form">
+            <input type="text" name="regAccount" placeholder="帳號（2~4 中文字）" required><br>
+            <input type="password" name="regPassword" placeholder="密碼" required><br>
+            <select name="regDepartment" required>
+                <option value="">請選擇部門</option>
+                <option value="營一處">營一處</option>
+                <option value="營二處">營二處</option>
+                <option value="營三處">營三處</option>
+                <option value="營四處台中站">營四處台中站</option>
+                <option value="營四處新港站">營四處新港站</option>
+                <option value="中區保養廠梧棲">中區保養廠梧棲</option>
+                <option value="其他">其他</option>
+            </select><br>
+            <input type="email" name="regEmail" placeholder="Email" required><br>
+            <button type="submit">註冊</button>
+            <p id="registerMessage"></p>
+        </form>
+
+        <hr>
+
+        <!-- 忘記密碼區塊 -->
+        <h3>查詢密碼</h3>
+        <form id="forgot-form">
+            <input type="text" name="forgotAccount" placeholder="帳號" required><br>
+            <input type="email" name="forgotEmail" placeholder="Email" required><br>
+            <button type="submit">寄送密碼到信箱</button>
+            <p id="forgotMessage"></p>
+        </form>
+
     </div>
 </body>
 </html>
+
