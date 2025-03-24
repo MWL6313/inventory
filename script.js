@@ -1,52 +1,60 @@
 // 取得 API 基本 URL
 const API_BASE_URL = "https://cloud-run-api-299116105630.asia-east1.run.app";
 
-
 // ✅ 註冊功能
-const registerForm = document.getElementById("register-form");
-registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+window.addEventListener("DOMContentLoaded", () => {
+  const registerForm = document.getElementById("register-form");
+  if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const account = registerForm.regAccount.value.trim();
-    const password = registerForm.regPassword.value.trim();
-    const department = registerForm.regDepartment.value;
-    const email = registerForm.regEmail.value.trim();
+      const account = registerForm.regAccount.value.trim();
+      const password = registerForm.regPassword.value.trim();
+      const department = registerForm.regDepartment.value;
+      const email = registerForm.regEmail.value.trim();
 
-    try {
+      try {
         const response = await fetch(`${API_BASE_URL}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ account, password, department, email }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account, password, department, email }),
         });
         const data = await response.json();
-        document.getElementById("registerMessage").innerText = data.message || (data.success ? "註冊成功" : "註冊失敗");
-    } catch (error) {
+        document.getElementById("registerMessage").innerText =
+          data.message || (data.success ? "註冊成功" : "註冊失敗");
+      } catch (error) {
         console.error("🔴 註冊錯誤:", error);
         document.getElementById("registerMessage").innerText = "系統錯誤，請稍後再試";
-    }
-});
+      }
+    });
+  }
 
-// ✅ 忘記密碼功能
-const forgotForm = document.getElementById("forgot-form");
-forgotForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // ✅ 忘記密碼功能
+  const forgotForm = document.getElementById("forgot-form");
+  if (forgotForm) {
+    forgotForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const account = forgotForm.forgotAccount.value.trim();
-    const email = forgotForm.forgotEmail.value.trim();
+      const account = forgotForm.forgotAccount.value.trim();
+      const email = forgotForm.forgotEmail.value.trim();
 
-    try {
+      try {
         const response = await fetch(`${API_BASE_URL}/forgot-password`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ account, email }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account, email }),
         });
         const data = await response.json();
-        document.getElementById("forgotMessage").innerText = data.message || (data.success ? "密碼已寄出，請查收 Email" : "查詢失敗");
-    } catch (error) {
+        document.getElementById("forgotMessage").innerText =
+          data.message || (data.success ? "密碼已寄出，請查收 Email" : "查詢失敗");
+      } catch (error) {
         console.error("🔴 查詢密碼錯誤:", error);
         document.getElementById("forgotMessage").innerText = "系統錯誤，請稍後再試";
-    }
+      }
+    });
+  }
 });
+
 
 // 🚀 登入功能（調整後，加入儲存 token）
 async function login() {
